@@ -16,24 +16,25 @@ export default function ARView({ onBack }) {
                 onClick={onBack}
                 className="absolute top-6 right-6 z-50 text-[10px] tracking-[0.3em] text-white opacity-80 hover:opacity-100 transition-opacity border border-white/20 hover:bg-white/10 rounded-full px-6 py-3"
             >
-                CLOSE
+                BACK TO MAINN
             </button>
 
             {/* Model Viewer */}
             <div className="flex-1 relative w-full h-full overflow-hidden">
                 <model-viewer
                     id="ar-model-viewer"
-                    src="https://modelviewer.dev/shared-assets/models/Astronaut.glb" // ←ここをURLに書き換え
-                    alt="Testing Model"
+                    src="/model.glb" // ローカルのモデルファイルを使用
+                    ios-src="/model.usdz" // iPhoneで配置するために必要（ファイルがあれば）
+                    alt="Tokisu 3D Model"
                     camera-controls
                     auto-rotate
                     ar
                     ar-modes="webxr scene-viewer quick-look"
-                    ar-scale="fixed" // 1:1の実寸大表示。ピンチズームを無効化しリアリティを確保
+                    ar-scale="fixed" // 1:1の実寸大表示
                     ar-placement="floor"
-                    environment-image="neutral" // ニュートラルなライティングで質感を向上
-                    exposure="1.2" // 明るさを調整
-                    shadow-intensity="1.5" // 影を強くして接地感を出す
+                    environment-image="neutral"
+                    exposure="1.2"
+                    shadow-intensity="1.5"
                     shadow-softness="0.4"
                     reveal="auto"
                     touch-action="pan-y"
@@ -44,7 +45,12 @@ export default function ARView({ onBack }) {
                         CALIBRATING 3D SPACE...
                     </div>
 
-                    {/* ARボタンのカスタマイズ（本来はスロットで入れるが、今回は外部ボタンで制御） */}
+                    <button
+                        slot="ar-button"
+                        className="absolute bottom-20 left-1/2 -translate-x-1/2 z-[9999] bg-white text-black px-12 py-5 rounded-full font-bold tracking-[0.3em] shadow-[0_0_50px_rgba(255,255,255,0.2)] text-[11px] whitespace-nowrap active:scale-95 transition-all hover:bg-opacity-90"
+                    >
+                        空間に実寸大で配置する
+                    </button>
                 </model-viewer>
 
                 {/* 操作ガイド */}
@@ -59,17 +65,6 @@ export default function ARView({ onBack }) {
                         </span>
                     </motion.div>
                 </div>
-
-                {/* 空間配置ボタン */}
-                <button
-                    onClick={() => {
-                        const mv = document.querySelector('#ar-model-viewer');
-                        if (mv) mv.activateAR();
-                    }}
-                    className="absolute bottom-20 left-1/2 -translate-x-1/2 z-[9999] bg-white text-black px-12 py-5 rounded-full font-bold tracking-[0.3em] shadow-[0_0_50px_rgba(255,255,255,0.2)] text-[11px] whitespace-nowrap active:scale-95 transition-all hover:bg-opacity-90"
-                >
-                    空間に実寸大で配置する
-                </button>
 
                 {/* 注意書き（提案コードの機能） */}
                 <div className="absolute bottom-6 w-full text-center pointer-events-none">
