@@ -25,7 +25,7 @@ export default function App() {
           className={`absolute inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 ${activePage === 'main' ? 'opacity-60' : 'opacity-20'
             }`}
           autoPlay loop muted playsInline
-          src="https://assets.mixkit.co/videos/preview/mixkit-potter-forming-a-clay-bowl-on-a-spinning-wheel-41006-large.mp4"
+          src="/suzu_process.mp4"
         />
 
         {/* MainScene: 常時表示。activePage によって pointer-events を切り替える */}
