@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TOKISU — Video Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Inter:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #000;
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    /* ── YouTube iframe を全画面背景に ── */
+    #yt-wrapper {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+    #yt-wrapper iframe {
+      position: absolute;
+      /* アスペクト比を保ちつつ全画面を覆う */
+      width: 177.78vh;   /* 16/9 × 100vh */
+      height: 56.25vw;   /* 9/16 × 100vw */
+      min-width: 100%;
+      min-height: 100%;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      border: none;
+    }
+
+    /* ── 暗め透明オーバーレイ ── */
+    #overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      background: rgba(0,0,0,0.48);
+    }
+
+    /* ── UI: ナビゲーション風 ── */
+    #ui {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 2.5rem 3rem;
+      pointer-events: none;
+    }
+
+    /* ブランドロゴ */
+    #logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 300;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: #f5f1eb;
+    }
+
+    /* 中央テキスト */
+    #center-text {
+      text-align: center;
+    }
+    #center-text h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.5rem, 6vw, 5.5rem);
+      font-weight: 300;
+      letter-spacing: 0.08em;
+      color: #f5f1eb;
+      line-height: 1.1;
+      margin-bottom: 1.2rem;
+    }
+    #center-text p {
+      font-size: clamp(0.65rem, 1.2vw, 0.8rem);
+      letter-spacing: 0.45em;
+      text-transform: uppercase;
+      color: rgba(245,241,235,0.55);
+    }
+
+    /* ナビボタン群 */
+    #nav-buttons {
+      display: flex;
+      gap: 1.2rem;
+      pointer-events: auto;
+    }
+    .nav-btn {
+      padding: 0.75rem 1.8rem;
+      border: 1px solid rgba(245,241,235,0.4);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      color: #f5f1eb;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .nav-btn:hover {
+      background: rgba(255,255,255,0.15);
+      border-color: rgba(245,241,235,0.8);
+    }
+
+    /* 動画ラベル（右下） */
+    #video-label {
+      position: fixed;
+      bottom: 1.8rem;
+      right: 2rem;
+      z-index: 10;
+      font-size: 0.62rem;
+      letter-spacing: 0.2em;
+      color: rgba(245,241,235,0.35);
+      text-transform: uppercase;
+    }
+
+    /* デモバッジ */
+    #demo-badge {
+      position: fixed;
+      top: 1rem;
+      right: 1.2rem;
+      z-index: 99;
+      background: rgba(255,200,0,0.85);
+      color: #000;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      padding: 0.35rem 0.8rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    /* セグメント切替インジケーター */
+    #seg-indicator {
+      position: fixed;
+      bottom: 1.8rem;
+      left: 2rem;
+      z-index: 10;
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      color: rgba(245,241,235,0.3);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- デモバッジ -->
+  <div id="demo-badge">⚡ Demo Preview</div>
+
+  <!-- YouTube 背景 -->
+  <div id="yt-wrapper">
+    <div id="player"></div>
+  </div>
+
+  <!-- 暗転オーバーレイ -->
+  <div id="overlay"></div>
+
+  <!-- UIレイヤー -->
+  <div id="ui">
+    <div id="logo">Tokisu</div>
+
+    <div id="center-text">
+      <h1>Coming soon...</h1>
+      <p>The Narrative D2C</p>
+    </div>
+
+    <div id="nav-buttons">
+      <button class="nav-btn">Story：珠洲の記憶</button>
+      <button class="nav-btn">AR Experience</button>
+      <button class="nav-btn">Join List</button>
+    </div>
+  </div>
+
+  <!-- 右下ラベル -->
+  <div id="video-label">珠洲焼 制作過程</div>
+
+  <!-- セグメント表示 -->
+  <div id="seg-indicator" id="seg-indicator">Clip 1 — 0:00〜0:15</div>
+
+  <!-- YouTube IFrame API -->
+  <script>
+    // ── セグメント定義 ──
+    const SEGMENTS = [
+      { start: 0,   end: 15,  label: 'Clip 1 — 0:00〜0:15' },
+      { start: 157, end: 171, label: 'Clip 2 — 2:37〜2:51' },
+    ];
+
+    let player;
+    let currentSeg = 0;
+    let checkTimer = null;
+
+    // YouTube IFrame API 読み込み
+    const tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api';
+    document.head.appendChild(tag);
+
+    window.onYouTubeIframeAPIReady = function () {
+      player = new YT.Player('player', {
+        videoId: 'iZdjlKR2jPo',
+        playerVars: {
+          autoplay: 1,
+          mute: 1,
+          controls: 0,
+          disablekb: 1,
+          fs: 0,
+          iv_load_policy: 3,
+          rel: 0,
+          modestbranding: 1,
+          start: SEGMENTS[0].start,
+          end:   SEGMENTS[0].end,
+          playsinline: 1,
+        },
+        events: {
+          onReady: onPlayerReady,
+          onStateChange: onPlayerStateChange,
+        },
+      });
+    };
+
+    function onPlayerReady(e) {
+      e.target.playVideo();
+      startWatcher();
+    }
+
+    function onPlayerStateChange(e) {
+      // 動画が終わった（ENDED=0）か、バッファリング終了後も再確認
+      if (e.data === YT.PlayerState.ENDED) {
+        nextSegment();
+      }
+    }
+
+    // ── end 時刻を過ぎたら強制的に次のセグメントへ ──
+    // (YouTube の end パラメータは初回しか効かないため、手動で監視)
+    function startWatcher() {
+      if (checkTimer) clearInterval(checkTimer);
+      checkTimer = setInterval(() => {
+        if (!player || typeof player.getCurrentTime !== 'function') return;
+        const t = player.getCurrentTime();
+        const seg = SEGMENTS[currentSeg];
+        if (t >= seg.end - 0.3) {
+          nextSegment();
+        }
+      }, 300);
+    }
+
+    function nextSegment() {
+      currentSeg = (currentSeg + 1) % SEGMENTS.length;
+      const seg = SEGMENTS[currentSeg];
+      player.seekTo(seg.start, true);
+      player.playVideo();
+      document.getElementById('seg-indicator').textContent = seg.label;
+    }
+  </script>
+</body>
+</html>

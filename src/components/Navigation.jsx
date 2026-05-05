@@ -13,7 +13,6 @@ export default function Navigation({ onNavigate }) {
                     transition={{ duration: 1.5, ease: "easeOut" }}
                     className="text-2xl font-extralight mb-2"
                 >
-                    Coming soon...
                 </motion.h1>
                 <motion.p
                     initial={{ opacity: 0 }}
