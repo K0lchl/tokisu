@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import MainScene from './components/MainScene';
 import Navigation from './components/Navigation';
 import ErrorBoundary from './components/ErrorBoundary';
+import LoadingScreen from './components/LoadingScreen';
 
 const StoryPage = lazy(() => import('./components/StoryPage'));
 const ARView = lazy(() => import('./components/ARView'));
@@ -10,10 +11,14 @@ const ContactPage = lazy(() => import('./components/ContactPage'));
 
 export default function App() {
   const [activePage, setActivePage] = useState('main');
+  const [loadingDone, setLoadingDone] = useState(false);
 
   return (
     <ErrorBoundary>
       <div className="relative w-full h-screen overflow-hidden bg-black text-white font-sans selection:bg-white/30">
+
+        {/* ローディングスクリーン: ロゴを見せてからメインコンテンツへ */}
+        <LoadingScreen onComplete={() => setLoadingDone(true)} />
 
         {/* 背景動画: 常に一番奥 */}
         <video
