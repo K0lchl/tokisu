@@ -7,13 +7,6 @@ export default function Navigation({ onNavigate }) {
 
             {/* プロジェクトの顔としてのタイトル演出 */}
             <header className="mb-12 text-center">
-                <motion.h1
-                    initial={{ opacity: 0, letterSpacing: "0.1em" }}
-                    animate={{ opacity: 1, letterSpacing: "0.6em" }}
-                    transition={{ duration: 1.5, ease: "easeOut" }}
-                    className="text-2xl font-extralight mb-2"
-                >
-                </motion.h1>
                 <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
