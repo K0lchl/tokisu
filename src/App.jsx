@@ -1,4 +1,4 @@
-import React, { useState, Suspense, lazy } from 'react';
+import React, { useState, Suspense, lazy, useRef, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import MainScene from './components/MainScene';
 import Navigation from './components/Navigation';
@@ -12,6 +12,25 @@ const ContactPage = lazy(() => import('./components/ContactPage'));
 export default function App() {
   const [activePage, setActivePage] = useState('main');
   const [loadingDone, setLoadingDone] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const audioRef = useRef(null);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = 0.4; // 控えめな音量
+    }
+  }, []);
+
+  const toggleMute = () => {
+    if (audioRef.current) {
+      if (isMuted) {
+        audioRef.current.play().catch(e => console.log("Autoplay blocked", e));
+      } else {
+        audioRef.current.pause();
+      }
+      setIsMuted(!isMuted);
+    }
+  };
 
   return (
     <ErrorBoundary>
@@ -27,6 +46,9 @@ export default function App() {
           autoPlay loop muted playsInline
           src="/suzu_process.mp4"
         />
+
+        {/* 環境音: 窯焚きの音 */}
+        <audio ref={audioRef} src="/kiln_ambient.mp3" loop />
 
         {/* MainScene: 常時表示。activePage によって pointer-events を切り替える */}
         <div className={`absolute inset-0 z-10 ${activePage === 'main' ? 'pointer-events-auto' : 'pointer-events-none'}`}>
@@ -56,16 +78,32 @@ export default function App() {
           )}
         </AnimatePresence>
 
-        {/* サブページ群（下からフワッと） */}
-        <div className="absolute inset-0 z-40">
-          <Suspense fallback={null}>
-            <AnimatePresence mode="wait">
-              {activePage === 'story' && <StoryPage key="story" onBack={() => setActivePage('main')} />}
-              {activePage === 'ar' && <ARView key="ar" onBack={() => setActivePage('main')} />}
-              {activePage === 'contact' && <ContactPage key="contact" onBack={() => setActivePage('main')} />}
-            </AnimatePresence>
-          </Suspense>
-        </div>
+        {/* サウンドコントロール: 右下に配置 */}
+        {loadingDone && activePage === 'main' && (
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            onClick={toggleMute}
+            className="absolute bottom-8 right-8 z-[110] flex items-center gap-3 group"
+          >
+            <div className="flex flex-col items-end">
+              <span className="text-[10px] tracking-[0.2em] uppercase opacity-40 group-hover:opacity-100 transition-opacity">
+                {isMuted ? 'Sound Off' : 'Sound On'}
+              </span>
+            </div>
+            <div className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center backdrop-blur-sm group-hover:border-white/60 transition-colors">
+              {isMuted ? (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6" />
+                </svg>
+              ) : (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M11 5L6 9H2v6h4l5 4V5zM19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
+                </svg>
+              )}
+            </div>
+          </motion.button>
+        )}
 
       </div>
     </ErrorBoundary>
