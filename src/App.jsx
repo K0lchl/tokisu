@@ -84,7 +84,11 @@ export default function App() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <Suspense fallback={null}>
+              <Suspense fallback={
+                <div className="absolute inset-0 flex items-center justify-center bg-black z-[100]">
+                  <span className="text-[10px] tracking-[0.5em] text-white/20 animate-pulse uppercase">Loading Experience...</span>
+                </div>
+              }>
                 {activePage === 'story' && <StoryPage onBack={() => setActivePage('main')} />}
                 {activePage === 'ar' && <ARView onBack={() => setActivePage('main')} />}
                 {activePage === 'contact' && <ContactPage onBack={() => setActivePage('main')} />}
