@@ -17,7 +17,7 @@ export default function App() {
 
   useEffect(() => {
     if (audioRef.current) {
-      audioRef.current.volume = 0.4; // 控えめな音量
+      audioRef.current.volume = 0.8; // 音量を引き上げ
     }
   }, []);
 
