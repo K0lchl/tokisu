@@ -41,11 +41,14 @@ export default function App() {
 
         {/* 背景動画: 常に一番奥 */}
         <video
+          key={activePage} /* ページ遷移時の不透明度リセットを確実にするため */
           className={`absolute inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 ${activePage === 'main' ? 'opacity-60' : 'opacity-20'
             }`}
           autoPlay loop muted playsInline
-          src="/suzu_process.mp4"
-        />
+        >
+          <source src="/suzu_process_mobile.mp4" media="(max-width: 768px)" />
+          <source src="/suzu_process.mp4" />
+        </video>
 
         {/* 環境音: 窯焚きの音 */}
         <audio ref={audioRef} src="/kiln_ambient.mp3" loop />
