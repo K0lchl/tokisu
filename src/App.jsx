@@ -61,19 +61,34 @@ export default function App() {
             }`}
         />
 
-        {/* ナビゲーション (MainSceneのUI) - z-indexを上げて確実にクリック可能にする */}
-        <AnimatePresence>
-          {activePage === 'main' && (
+        {/* コンテンツレイヤー */}
+        <AnimatePresence mode="wait">
+          {activePage === 'main' ? (
             <motion.div
+              key="main-ui"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0, scale: 0.98 }}
               transition={{ duration: 0.6 }}
-              className="absolute inset-0 z-[100] pointer-events-none" // コンテナ自体はスルー
+              className="absolute inset-0 z-[100] pointer-events-none"
             >
-              <div className="w-full h-full pointer-events-auto"> {/* 中身だけクリック有効 */}
+              <div className="w-full h-full pointer-events-auto">
                 <Navigation onNavigate={setActivePage} />
               </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="sub-page"
+              className="absolute inset-0 z-[100]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <Suspense fallback={null}>
+                {activePage === 'story' && <StoryPage onBack={() => setActivePage('main')} />}
+                {activePage === 'ar' && <ARView onBack={() => setActivePage('main')} />}
+                {activePage === 'contact' && <ContactPage onBack={() => setActivePage('main')} />}
+              </Suspense>
             </motion.div>
           )}
         </AnimatePresence>
