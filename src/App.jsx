@@ -8,6 +8,7 @@ import LoadingScreen from './components/LoadingScreen';
 const StoryPage = lazy(() => import('./components/StoryPage'));
 const ARView = lazy(() => import('./components/ARView'));
 const ContactPage = lazy(() => import('./components/ContactPage'));
+const ShopPage = lazy(() => import('./components/ShopPage'));
 
 export default function App() {
   const [activePage, setActivePage] = useState('main');
@@ -38,6 +39,26 @@ export default function App() {
 
         {/* ローディングスクリーン: ロゴを見せてからメインコンテンツへ */}
         <LoadingScreen onComplete={() => setLoadingDone(true)} />
+
+        {/* トップ右: SHOP リンク (案1: ミニマル配置) */}
+        {loadingDone && activePage === 'main' && (
+          <motion.button
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 1 }}
+            onClick={() => setActivePage('shop')}
+            className="absolute top-8 right-8 md:top-12 md:right-12 z-[110] group overflow-hidden pointer-events-auto"
+          >
+            <div className="flex flex-col items-end">
+              <span className="text-[10px] tracking-[0.4em] uppercase text-white/60 group-hover:text-white transition-colors duration-500">
+                Shop
+              </span>
+              <motion.div 
+                className="h-[1px] bg-white w-0 group-hover:w-full transition-all duration-500 mt-1"
+              />
+            </div>
+          </motion.button>
+        )}
 
         {/* 背景動画: 常に一番奥 */}
         <video
@@ -95,6 +116,7 @@ export default function App() {
                 {activePage === 'story' && <StoryPage onBack={() => setActivePage('main')} />}
                 {activePage === 'ar' && <ARView onBack={() => setActivePage('main')} />}
                 {activePage === 'contact' && <ContactPage onBack={() => setActivePage('main')} />}
+                {activePage === 'shop' && <ShopPage onBack={() => setActivePage('main')} />}
               </Suspense>
             </motion.div>
           )}
