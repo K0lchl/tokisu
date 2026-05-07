@@ -119,7 +119,7 @@ export default function StoryPage({ onBack }) {
                             <h3 className="text-xl font-light tracking-[0.3em] mb-8 border-l border-white/20 pl-6">第四節：明日を刻む</h3>
                             <p className="text-sm leading-loose text-white/60 font-light tracking-widest">
                                 Tokisuは、伝統の「守り人」ではありません<br />
-                                古の知恵を、現代の暮らしに溶け込む形へと再構築する
+                                古の知恵を、現代の暮らしに溶け込む形へと再構築する<br />
                                 珠洲焼の持つ生命力を、世界へ、そして未来へと繋いでいく
                             </p>
                         </div>

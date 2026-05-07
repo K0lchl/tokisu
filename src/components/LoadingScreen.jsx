@@ -5,19 +5,17 @@ export default function LoadingScreen({ onComplete }) {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
-    // ページの読み込み完了を検知
     const handleLoad = () => {
-      // 読み込み完了後、最低1.8秒はロゴを見せる
+      // 読み込み完了後、漆黒の余韻を楽しむために最低2.5秒は確保
       setTimeout(() => {
         setIsVisible(false);
-      }, 1800);
+      }, 2500);
     };
 
     if (document.readyState === 'complete') {
-      // すでに読み込み済みの場合も最低時間を確保
       setTimeout(() => {
         setIsVisible(false);
-      }, 1800);
+      }, 2500);
     } else {
       window.addEventListener('load', handleLoad);
       return () => window.removeEventListener('load', handleLoad);
@@ -30,83 +28,72 @@ export default function LoadingScreen({ onComplete }) {
         <motion.div
           key="loading"
           initial={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 9999,
-            backgroundColor: '#c8c4bc',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
+          exit={{ 
+            opacity: 0,
+            transition: { duration: 1.5, ease: [0.22, 1, 0.36, 1] }
           }}
+          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#0a0a0a]"
         >
-          {/* ロゴテキスト */}
+          {/* 背景の微かなテクスチャ感（ノイズ） */}
+          <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')]" />
+
+          {/* ロゴコンテナ */}
           <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '10px',
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ 
+              opacity: 1, 
+              scale: 1,
+              transition: { duration: 2, ease: "easeOut" }
             }}
+            className="flex flex-col items-center gap-6 relative"
           >
-            {/* ブランド名 */}
-            <span
-              style={{
-                fontFamily: '"Cormorant Garamond", "Times New Roman", serif',
-                fontSize: 'clamp(2.5rem, 8vw, 5rem)',
-                fontWeight: 300,
-                letterSpacing: '0.35em',
-                color: '#1a1714',
-                lineHeight: 1,
-                textTransform: 'uppercase',
+            {/* ブランド名: 漆黒に浮かぶ光沢感 */}
+            <motion.span
+              animate={{ 
+                textShadow: [
+                  "0 0 20px rgba(255,255,255,0)",
+                  "0 0 30px rgba(255,255,255,0.2)",
+                  "0 0 20px rgba(255,255,255,0)"
+                ]
               }}
+              transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+              className="font-serif text-[clamp(2.5rem,10vw,5rem)] font-light tracking-[0.4em] text-white uppercase leading-none"
+              style={{ fontFamily: '"Cormorant Garamond", serif' }}
             >
               Tokisu
-            </span>
+            </motion.span>
 
-            {/* サブタイトル / キャッチフレーズ */}
-            <span
-              style={{
-                fontFamily: '"Cormorant Garamond", "Times New Roman", serif',
-                fontSize: 'clamp(0.6rem, 2vw, 0.75rem)',
-                fontWeight: 400,
-                letterSpacing: '0.5em',
-                color: '#4a4540',
-                textTransform: 'uppercase',
-              }}
+            {/* サブタイトル */}
+            <motion.span
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.4 }}
+              transition={{ delay: 0.5, duration: 1.5 }}
+              className="font-serif text-[clamp(0.6rem,2vw,0.75rem)] tracking-[0.6em] text-white uppercase"
             >
               Ceramic Art
-            </span>
-          </motion.div>
+            </motion.span>
 
-          {/* ローディングバー */}
-          <motion.div
-            style={{
-              position: 'absolute',
-              bottom: '10%',
-              width: '80px',
-              height: '1px',
-              backgroundColor: '#a09990',
-              overflow: 'hidden',
-            }}
-          >
-            <motion.div
-              initial={{ x: '-100%' }}
-              animate={{ x: '0%' }}
-              transition={{ duration: 1.6, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
-              style={{
-                width: '100%',
-                height: '100%',
-                backgroundColor: '#1a1714',
-              }}
+            {/* 装飾的な中央の線 */}
+            <motion.div 
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: 40, opacity: 0.2 }}
+              transition={{ delay: 1, duration: 1.5 }}
+              className="h-[1px] bg-white mt-4"
             />
           </motion.div>
+
+          {/* 画面下部の進捗表示（よりミニマルに） */}
+          <div className="absolute bottom-[15%] flex flex-col items-center gap-4">
+            <div className="w-[1px] h-12 bg-gradient-to-b from-white/20 to-transparent" />
+            <motion.span 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: [0.2, 0.5, 0.2] }}
+              transition={{ repeat: Infinity, duration: 2 }}
+              className="text-[8px] tracking-[0.5em] text-white/40 uppercase"
+            >
+              Loading History
+            </motion.span>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>
