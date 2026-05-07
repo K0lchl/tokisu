@@ -16,21 +16,21 @@ const Section = ({ children, delay = 0 }) => (
 export default function StoryPage({ onBack }) {
     return (
         <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-xl overflow-y-auto scroll-smooth">
-            
+
             {/* プログレスバー */}
-            <motion.div 
+            <motion.div
                 className="fixed top-0 left-0 right-0 h-[1px] bg-white/40 z-[60] origin-left"
                 style={{ scaleX: useScrollProgress() }}
             />
 
             {/* 戻るボタン (固定) */}
-            <motion.nav 
+            <motion.nav
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="fixed top-8 left-8 md:top-12 md:left-12 z-[60]"
             >
-                <button 
-                    onClick={onBack} 
+                <button
+                    onClick={onBack}
                     className="group flex items-center gap-4 text-[10px] tracking-[0.4em] text-white/50 hover:text-white transition-colors uppercase"
                 >
                     <div className="w-8 h-[1px] bg-white/20 group-hover:w-12 group-hover:bg-white transition-all duration-500" />
@@ -39,17 +39,17 @@ export default function StoryPage({ onBack }) {
             </motion.nav>
 
             <div className="max-w-4xl mx-auto px-8 pt-40 pb-20">
-                
+
                 {/* ヒーロー */}
                 <header className="mb-40 text-center">
-                    <motion.span 
+                    <motion.span
                         initial={{ opacity: 0 }}
                         whileInView={{ opacity: 1 }}
                         className="text-[10px] tracking-[1em] text-white/30 uppercase block mb-8"
                     >
                         The Narrative
                     </motion.span>
-                    <motion.h2 
+                    <motion.h2
                         initial={{ opacity: 0, letterSpacing: "0.2em" }}
                         whileInView={{ opacity: 1, letterSpacing: "0.5em" }}
                         transition={{ duration: 1.5 }}
@@ -65,9 +65,9 @@ export default function StoryPage({ onBack }) {
                         <div className="order-2 md:order-1">
                             <h3 className="text-xl font-light tracking-[0.3em] mb-8 border-l border-white/20 pl-6">第一節：地の果て</h3>
                             <p className="text-sm leading-loose text-white/60 font-light tracking-widest">
-                                石川県能登半島の最先端、珠洲。<br />
-                                かつて日本海を行き交う船が立ち寄ったこの地には、
-                                数百年の時を超えて受け継がれる「黒」の記憶があります。
+                                石川県能登半島の最先端、珠洲市<br />
+                                かつて日本海を行き交う船乗りたちが立ち寄ったこの地には、<br />
+                                数百年の時を超えて受け継がれる「黒」の記憶がある
                             </p>
                         </div>
                         <div className="order-1 md:order-2 aspect-video overflow-hidden rounded-sm grayscale opacity-80 hover:grayscale-0 transition-all duration-1000">
@@ -85,9 +85,10 @@ export default function StoryPage({ onBack }) {
                         <div>
                             <h3 className="text-xl font-light tracking-[0.3em] mb-8 border-l border-white/20 pl-6">第二節：無垢なる黒</h3>
                             <p className="text-sm leading-loose text-white/60 font-light tracking-widest">
-                                珠洲焼に、色彩はありません。<br />
-                                釉薬を一切使わず、土に含まれる鉄分と薪の炎、そして「還元」という奇跡が、
-                                金属のような光沢を放つ唯一無二の黒を生み出します。
+                                珠洲焼に、色彩はない<br />
+                                釉薬を一切使わず、土に含まれる鉄分と薪の炎-<br />
+                                そして「還元」という奇跡-<br />
+                                金属のような光沢を放つ唯一無二の黒を生み出す
                             </p>
                         </div>
                     </div>
@@ -103,9 +104,9 @@ export default function StoryPage({ onBack }) {
                         <div className="max-w-xl">
                             <h3 className="text-xl font-light tracking-[0.3em] mb-8">第三節：絶やさぬ火</h3>
                             <p className="text-sm leading-loose text-white/60 font-light tracking-widest">
-                                震災は、多くのものを奪い去りました。<br />
-                                しかし、職人たちの指先は、土の感触を忘れてはいませんでした。
-                                崩れた窯を立て直し、再び立ち上がる煙は、希望の証。
+                                震災は、多くのものを奪い去りました<br />
+                                しかし、職人たちの指先は、土の感触を忘れてはいませんでした<br />
+                                崩れた窯を立て直し、再び立ち上がる煙は、希望の証
                             </p>
                         </div>
                     </div>
@@ -117,9 +118,9 @@ export default function StoryPage({ onBack }) {
                         <div>
                             <h3 className="text-xl font-light tracking-[0.3em] mb-8 border-l border-white/20 pl-6">第四節：明日を刻む</h3>
                             <p className="text-sm leading-loose text-white/60 font-light tracking-widest">
-                                Tokisuは、伝統の「守り人」ではありません。<br />
-                                古の知恵を、現代の暮らしに溶け込む形へと再構築する。
-                                珠洲焼の持つ生命力を、世界へ、そして未来へと繋いでいく。
+                                Tokisuは、伝統の「守り人」ではありません<br />
+                                古の知恵を、現代の暮らしに溶け込む形へと再構築する
+                                珠洲焼の持つ生命力を、世界へ、そして未来へと繋いでいく
                             </p>
                         </div>
                         <div className="aspect-[4/5] overflow-hidden rounded-sm opacity-80">
@@ -129,13 +130,13 @@ export default function StoryPage({ onBack }) {
                 </Section>
 
                 {/* フッター的な誘導 */}
-                <motion.footer 
+                <motion.footer
                     initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}
                     className="text-center pt-20 border-t border-white/10"
                 >
                     <p className="text-[10px] tracking-[0.5em] text-white/30 uppercase mb-12">Experience more</p>
-                    <button 
+                    <button
                         onClick={onBack}
                         className="px-12 py-4 border border-white/20 hover:bg-white hover:text-black transition-all duration-700 text-[10px] tracking-[0.2em] uppercase rounded-full"
                     >
@@ -150,7 +151,7 @@ export default function StoryPage({ onBack }) {
 // スクロール進捗を監視するカスタムフック
 function useScrollProgress() {
     const [progress, setProgress] = React.useState(0);
-    
+
     React.useEffect(() => {
         const container = document.querySelector('.overflow-y-auto');
         if (!container) return;
