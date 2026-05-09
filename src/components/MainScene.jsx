@@ -1,6 +1,7 @@
 import React, { Suspense, useMemo, useRef } from 'react';
 import { Canvas, useLoader, useFrame } from '@react-three/fiber';
 import { OrbitControls, Environment, Float, Center, useGLTF, ContactShadows } from '@react-three/drei';
+import { EffectComposer, Bloom, Vignette, Noise } from '@react-three/postprocessing';
 import * as THREE from 'three';
 
 function Product() {
@@ -132,6 +133,16 @@ export default function MainScene() {
                     minPolarAngle={Math.PI / 2.5}
                     maxPolarAngle={Math.PI / 1.5}
                 />
+
+                {/* 映画化：シネマティック・エフェクト */}
+                <EffectComposer disableNormalPass>
+                    {/* 光の溢れ出し（強いハイライト部分のみをフワッと光らせる） */}
+                    <Bloom luminanceThreshold={1} mipmapBlur intensity={1.5} />
+                    {/* フィルムの粒子感（質感をリッチにする微細なノイズ） */}
+                    <Noise opacity={0.03} />
+                    {/* 画面四隅の暗やみ（視線を中央の壺に誘導） */}
+                    <Vignette eskil={false} offset={0.1} darkness={1.2} />
+                </EffectComposer>
             </Canvas>
         </div>
     );
