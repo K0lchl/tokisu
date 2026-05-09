@@ -3,24 +3,27 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 export default function LoadingScreen({ onComplete }) {
   const [isVisible, setIsVisible] = useState(true);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [isEntering, setIsEntering] = useState(false);
 
   useEffect(() => {
-    const handleLoad = () => {
-      // 読み込み完了後、漆黒の余韻を楽しむために最低2.5秒は確保
-      setTimeout(() => {
-        setIsVisible(false);
-      }, 2500);
-    };
+    const handleLoad = () => setIsLoaded(true);
 
     if (document.readyState === 'complete') {
-      setTimeout(() => {
-        setIsVisible(false);
-      }, 2500);
+      setIsLoaded(true);
     } else {
       window.addEventListener('load', handleLoad);
       return () => window.removeEventListener('load', handleLoad);
     }
   }, []);
+
+  const handleStart = () => {
+    setIsEntering(true);
+    // 漆黒の余韻
+    setTimeout(() => {
+      setIsVisible(false);
+    }, 1200);
+  };
 
   return (
     <AnimatePresence onExitComplete={onComplete}>
@@ -30,24 +33,21 @@ export default function LoadingScreen({ onComplete }) {
           initial={{ opacity: 1 }}
           exit={{ 
             opacity: 0,
-            transition: { duration: 1.5, ease: [0.22, 1, 0.36, 1] }
+            transition: { duration: 2, ease: [0.22, 1, 0.36, 1] }
           }}
           className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#0a0a0a]"
         >
-          {/* 背景の微かなテクスチャ感（ノイズ） */}
           <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')]" />
 
-          {/* ロゴコンテナ */}
           <motion.div
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ 
-              opacity: 1, 
-              scale: 1,
-              transition: { duration: 2, ease: "easeOut" }
+              opacity: isEntering ? 0 : 1, 
+              scale: isEntering ? 1.05 : 1,
+              transition: { duration: 1, ease: "easeInOut" }
             }}
             className="flex flex-col items-center gap-6 relative"
           >
-            {/* ブランド名: 漆黒に浮かぶ光沢感 */}
             <motion.span
               animate={{ 
                 textShadow: [
@@ -63,7 +63,6 @@ export default function LoadingScreen({ onComplete }) {
               Tokisu
             </motion.span>
 
-            {/* サブタイトル */}
             <motion.span
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.4 }}
@@ -73,7 +72,6 @@ export default function LoadingScreen({ onComplete }) {
               Ceramic Art
             </motion.span>
 
-            {/* 装飾的な中央の線 */}
             <motion.div 
               initial={{ width: 0, opacity: 0 }}
               animate={{ width: 40, opacity: 0.2 }}
@@ -82,20 +80,41 @@ export default function LoadingScreen({ onComplete }) {
             />
           </motion.div>
 
-          {/* 画面下部の進捗表示（よりミニマルに） */}
-          <div className="absolute bottom-[15%] flex flex-col items-center gap-4">
-            <div className="w-[1px] h-12 bg-gradient-to-b from-white/20 to-transparent" />
-            <motion.span 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: [0.2, 0.5, 0.2] }}
-              transition={{ repeat: Infinity, duration: 2 }}
-              className="text-[8px] tracking-[0.5em] text-white/40 uppercase"
-            >
-              Loading History
-            </motion.span>
+          {/* 読み込み完了後のアクションボタン */}
+          <div className="absolute bottom-[20%] h-20 flex items-center justify-center">
+            <AnimatePresence>
+              {isLoaded && !isEntering && (
+                <motion.button
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  onClick={handleStart}
+                  className="group flex flex-col items-center gap-4 focus:outline-none"
+                >
+                  <span className="text-[10px] tracking-[0.8em] text-white/50 group-hover:text-white transition-colors uppercase">
+                    Enter Experience
+                  </span>
+                  <div className="w-[1px] h-10 bg-white/20 group-hover:h-16 group-hover:bg-white transition-all duration-700" />
+                </motion.button>
+              )}
+            </AnimatePresence>
           </div>
+
+          {!isLoaded && (
+            <div className="absolute bottom-[15%] flex flex-col items-center gap-4">
+              <motion.span 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: [0.2, 0.5, 0.2] }}
+                transition={{ repeat: Infinity, duration: 2 }}
+                className="text-[8px] tracking-[0.5em] text-white/40 uppercase"
+              >
+                Loading History
+              </motion.span>
+            </div>
+          )}
         </motion.div>
       )}
     </AnimatePresence>
   );
 }
+

@@ -1,9 +1,11 @@
-import React, { useState, Suspense, lazy, useRef, useEffect } from 'react';
+import React, { useState, Suspense, lazy, useEffect, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import MainScene from './components/MainScene';
 import Navigation from './components/Navigation';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoadingScreen from './components/LoadingScreen';
+import AudioToggle from './components/AudioToggle';
+import { useSound } from './hooks/useSound';
 
 const StoryPage = lazy(() => import('./components/StoryPage'));
 const ARView = lazy(() => import('./components/ARView'));
@@ -13,39 +15,61 @@ const ShopPage = lazy(() => import('./components/ShopPage'));
 export default function App() {
   const [activePage, setActivePage] = useState('main');
   const [loadingDone, setLoadingDone] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
-  const audioRef = useRef(null);
+  const [hasInteracted, setHasInteracted] = useState(false);
 
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = 0.8; // 音量を引き上げ
-    }
-  }, []);
+  // 環境音の定義
+  const kilnSound = useSound('/kiln_ambient.mp3', { loop: true, maxVolume: 0.5 });
+  // 珠洲の風（高音域の空気感）を追加レイヤーとして定義
+  const windSound = useSound('https://www.soundjay.com/nature/wind-01.mp3', { loop: true, maxVolume: 0.15 });
 
-  const toggleMute = () => {
-    if (audioRef.current) {
-      if (isMuted) {
-        audioRef.current.play().catch(e => console.log("Autoplay blocked", e));
-      } else {
-        audioRef.current.pause();
-      }
-      setIsMuted(!isMuted);
+  const handleEnter = useCallback(() => {
+    setLoadingDone(true);
+    setHasInteracted(true);
+    kilnSound.play();
+    windSound.play();
+  }, [kilnSound, windSound]);
+
+  const toggleGlobalMute = () => {
+    if (kilnSound.isPlaying) {
+      kilnSound.stop();
+      windSound.stop();
+    } else {
+      kilnSound.play();
+      windSound.play();
     }
   };
+
+  // ページに応じて音のバランスを変える (ダイナミック・ミキシング)
+  useEffect(() => {
+    if (!hasInteracted || !kilnSound.isPlaying) return;
+
+    if (activePage === 'story') {
+      // ストーリーページでは窯の音を遠ざけ、空気感（風）を強める
+      kilnSound.fadeTo(0.1, 3000);
+      windSound.fadeTo(0.25, 3000);
+    } else if (activePage === 'main') {
+      // メインシーンでは窯の音を主役に
+      kilnSound.fadeTo(0.5, 2000);
+      windSound.fadeTo(0.15, 2000);
+    } else {
+      // その他のページ（Contact, Shop等）は静寂を重視
+      kilnSound.fadeTo(0.05, 2000);
+      windSound.fadeTo(0.05, 2000);
+    }
+  }, [activePage, hasInteracted, kilnSound.isPlaying]);
 
   return (
     <ErrorBoundary>
       <div className="relative w-full h-screen overflow-hidden bg-black text-white font-sans selection:bg-white/30">
 
-        {/* ローディングスクリーン: ロゴを見せてからメインコンテンツへ */}
-        <LoadingScreen onComplete={() => setLoadingDone(true)} />
+        <LoadingScreen onComplete={handleEnter} />
 
-        {/* トップ右: SHOP リンク (案1: ミニマル配置) */}
+        {/* トップ右: SHOP リンク */}
         {loadingDone && activePage === 'main' && (
           <motion.button
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 1 }}
+            transition={{ duration: 1, delay: 0.5 }}
             onClick={() => setActivePage('shop')}
             className="absolute top-8 right-8 md:top-12 md:right-12 z-[110] group overflow-hidden pointer-events-auto"
           >
@@ -60,29 +84,28 @@ export default function App() {
           </motion.button>
         )}
 
-        {/* 背景動画: 常に一番奥 */}
+        {/* 背景動画 */}
         <video
-          key={activePage} /* ページ遷移時の不透明度リセットを確実にするため */
-          className={`absolute inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 ${activePage === 'main' ? 'opacity-60' : 'opacity-20'
-            }`}
+          key={activePage}
+          className={`absolute inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 ${
+            activePage === 'main' ? 'opacity-40' : 'opacity-10'
+          }`}
           autoPlay loop muted playsInline
         >
           <source src="/suzu_process_mobile.mp4" media="(max-width: 768px)" />
           <source src="/suzu_process.mp4" />
         </video>
 
-        {/* 環境音: 窯焚きの音 */}
-        <audio ref={audioRef} src="/kiln_ambient.mp3" loop />
-
-        {/* MainScene: 常時表示。activePage によって pointer-events を切り替える */}
+        {/* MainScene */}
         <div className={`absolute inset-0 z-10 ${activePage === 'main' ? 'pointer-events-auto' : 'pointer-events-none'}`}>
           <MainScene />
         </div>
 
-        {/* 背景のぼかし＆暗転のトランジションオーバーレイ */}
+        {/* トランジションオーバーレイ */}
         <div
-          className={`absolute inset-0 pointer-events-none z-20 transition-all duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] ${activePage === 'main' ? 'bg-transparent backdrop-blur-[1px]' : 'bg-black/70 backdrop-blur-2xl'
-            }`}
+          className={`absolute inset-0 pointer-events-none z-20 transition-all duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+            activePage === 'main' ? 'bg-transparent backdrop-blur-[1px]' : 'bg-black/80 backdrop-blur-3xl'
+          }`}
         />
 
         {/* コンテンツレイヤー */}
@@ -93,7 +116,7 @@ export default function App() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0, scale: 0.98 }}
-              transition={{ duration: 0.6 }}
+              transition={{ duration: 0.8 }}
               className="absolute inset-0 z-[100] pointer-events-none"
             >
               <div className="w-full h-full pointer-events-auto">
@@ -122,31 +145,19 @@ export default function App() {
           )}
         </AnimatePresence>
 
-        {/* サウンドコントロール: 右下に配置 */}
-        {loadingDone && activePage === 'main' && (
-          <motion.button
+        {/* サウンドコントロール */}
+        {loadingDone && (
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            onClick={toggleMute}
-            className="absolute bottom-8 right-8 z-[110] flex items-center gap-3 group"
+            transition={{ delay: 1 }}
+            className="absolute bottom-8 right-8 z-[110]"
           >
-            <div className="flex flex-col items-end">
-              <span className="text-[10px] tracking-[0.2em] uppercase opacity-40 group-hover:opacity-100 transition-opacity">
-                {isMuted ? 'Sound Off' : 'Sound On'}
-              </span>
-            </div>
-            <div className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center backdrop-blur-sm group-hover:border-white/60 transition-colors">
-              {isMuted ? (
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6" />
-                </svg>
-              ) : (
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M11 5L6 9H2v6h4l5 4V5zM19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
-                </svg>
-              )}
-            </div>
-          </motion.button>
+            <AudioToggle 
+              isPlaying={kilnSound.isPlaying} 
+              toggle={toggleGlobalMute} 
+            />
+          </motion.div>
         )}
 
       </div>

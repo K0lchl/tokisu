@@ -1,7 +1,15 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useSFX } from '../hooks/useSFX';
 
 export default function Navigation({ onNavigate }) {
+    const { playTick } = useSFX();
+
+    const handleNavigate = (page) => {
+        playTick();
+        onNavigate(page);
+    };
+
     return (
         <nav className="absolute bottom-10 md:bottom-16 left-0 right-0 z-30 flex flex-col items-center pointer-events-none px-6">
 
@@ -20,7 +28,7 @@ export default function Navigation({ onNavigate }) {
             <div className="flex flex-col sm:flex-row gap-4 w-full max-w-lg mx-auto pointer-events-auto">
                 <motion.button
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => onNavigate('story')}
+                    onClick={() => handleNavigate('story')}
                     className="flex-1 py-4 bg-white/5 hover:bg-white/10 border border-white/20 hover:border-white/50 backdrop-blur-md text-white text-[10px] tracking-[0.2em] transition-colors duration-500 rounded-full"
                 >
                     STORY : 珠洲の記憶
@@ -28,7 +36,7 @@ export default function Navigation({ onNavigate }) {
 
                 <motion.button
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => onNavigate('ar')}
+                    onClick={() => handleNavigate('ar')}
                     className="flex-1 py-4 bg-white/5 hover:bg-white/10 border border-white/20 hover:border-white/50 backdrop-blur-md text-white text-[10px] tracking-[0.2em] transition-colors duration-500 rounded-full"
                 >
                     AR EXPERIENCE
@@ -36,7 +44,7 @@ export default function Navigation({ onNavigate }) {
 
                 <motion.button
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => onNavigate('contact')}
+                    onClick={() => handleNavigate('contact')}
                     className="relative overflow-hidden flex-1 py-4 bg-white/90 hover:bg-white text-black text-[10px] font-bold tracking-[0.2em] transition-colors duration-500 rounded-full shadow-[0_4px_30px_rgba(255,255,255,0.2)]"
                 >
                     <span className="relative z-10">JOIN LIST</span>
