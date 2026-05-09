@@ -35,7 +35,26 @@ export function useSound(src, options = {}) {
             audioRef.current.play().catch(e => console.warn("Audio resume blocked", e));
         }
 
-        const step = 0.02;
+        const currentVol = audioRef.current.volume;
+        const volumeDiff = Math.abs(currentVol - targetVolume);
+        
+        if (volumeDiff === 0) {
+            if (targetVolume === 0 && !audioRef.current.paused) {
+                audioRef.current.pause();
+            }
+            return;
+        }
+
+        // durationが短い場合は即座に切り替え（ポップノイズ防止のため最低限の時間は確保）
+        if (duration <= 50) {
+            audioRef.current.volume = targetVolume;
+            setVolume(targetVolume);
+            if (targetVolume === 0) audioRef.current.pause();
+            return;
+        }
+
+        const step = volumeDiff / (duration / 30);
+
         fadeInterval.current = setInterval(() => {
             if (!audioRef.current) {
                 clearInterval(fadeInterval.current);
@@ -67,14 +86,15 @@ export function useSound(src, options = {}) {
         if (!audioRef.current) return;
         audioRef.current.play().then(() => {
             setIsPlaying(true);
-            fade(maxVolume);
+            fade(maxVolume, 2000);
         }).catch(err => {
             console.warn("Audio play blocked by browser", err);
         });
     }, [fade, maxVolume]);
 
     const stop = useCallback(() => {
-        fade(0);
+        // Ambient Off時は即座(300ms)に消音する
+        fade(0, 300);
         setIsPlaying(false);
     }, [fade]);
 

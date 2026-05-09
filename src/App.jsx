@@ -19,23 +19,23 @@ export default function App() {
 
   // 環境音の定義
   const kilnSound = useSound('/kiln_ambient.mp3', { loop: true, maxVolume: 0.5 });
-  // 珠洲の風（高音域の空気感）を追加レイヤーとして定義
-  const windSound = useSound('https://www.soundjay.com/nature/wind-01.mp3', { loop: true, maxVolume: 0.15 });
+  // 海の音（波の音）を背景レイヤーとして定義
+  const oceanSound = useSound('https://freesound.org/data/previews/400/400632_5121236-lq.mp3', { loop: true, maxVolume: 0.6 });
 
   const handleEnter = useCallback(() => {
     setLoadingDone(true);
     setHasInteracted(true);
     kilnSound.play();
-    windSound.play();
-  }, [kilnSound, windSound]);
+    oceanSound.play();
+  }, [kilnSound, oceanSound]);
 
   const toggleGlobalMute = () => {
     if (kilnSound.isPlaying) {
       kilnSound.stop();
-      windSound.stop();
+      oceanSound.stop();
     } else {
       kilnSound.play();
-      windSound.play();
+      oceanSound.play();
     }
   };
 
@@ -44,17 +44,17 @@ export default function App() {
     if (!hasInteracted || !kilnSound.isPlaying) return;
 
     if (activePage === 'story') {
-      // ストーリーページでは窯の音を完全に遠ざけ、空気感（風）を強める（差別化）
+      // ストーリーページでは窯の音を完全に遠ざけ、海の音を強める
       kilnSound.fadeTo(0.0, 3000);
-      windSound.fadeTo(0.6, 3000);
+      oceanSound.fadeTo(0.6, 3000);
     } else if (activePage === 'main') {
-      // メインシーンでは窯の音を主役に
+      // メインシーンでは窯の音を主役に、海の音はかすかに
       kilnSound.fadeTo(0.5, 2000);
-      windSound.fadeTo(0.15, 2000);
+      oceanSound.fadeTo(0.1, 2000);
     } else {
       // その他のページ（Contact, Shop等）は静寂を重視
       kilnSound.fadeTo(0.0, 2000);
-      windSound.fadeTo(0.0, 2000);
+      oceanSound.fadeTo(0.0, 2000);
     }
   }, [activePage, hasInteracted, kilnSound.isPlaying]);
 
