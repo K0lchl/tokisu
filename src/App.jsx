@@ -44,17 +44,17 @@ export default function App() {
     if (!hasInteracted || !kilnSound.isPlaying) return;
 
     if (activePage === 'story') {
-      // ストーリーページでは窯の音を遠ざけ、空気感（風）を強める
-      kilnSound.fadeTo(0.1, 3000);
-      windSound.fadeTo(0.25, 3000);
+      // ストーリーページでは窯の音を完全に遠ざけ、空気感（風）を強める（差別化）
+      kilnSound.fadeTo(0.0, 3000);
+      windSound.fadeTo(0.6, 3000);
     } else if (activePage === 'main') {
       // メインシーンでは窯の音を主役に
       kilnSound.fadeTo(0.5, 2000);
       windSound.fadeTo(0.15, 2000);
     } else {
       // その他のページ（Contact, Shop等）は静寂を重視
-      kilnSound.fadeTo(0.05, 2000);
-      windSound.fadeTo(0.05, 2000);
+      kilnSound.fadeTo(0.0, 2000);
+      windSound.fadeTo(0.0, 2000);
     }
   }, [activePage, hasInteracted, kilnSound.isPlaying]);
 
@@ -145,13 +145,13 @@ export default function App() {
           )}
         </AnimatePresence>
 
-        {/* サウンドコントロール */}
+        {/* サウンドコントロール（スマホでの被りを防ぐため左上に配置） */}
         {loadingDone && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1 }}
-            className="absolute bottom-8 right-8 z-[110]"
+            className="absolute top-8 left-8 md:top-12 md:left-12 z-[110]"
           >
             <AudioToggle 
               isPlaying={kilnSound.isPlaying} 

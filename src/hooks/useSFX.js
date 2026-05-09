@@ -7,8 +7,8 @@ import { useCallback, useRef } from 'react';
 export function useSFX() {
     const audioContext = useRef(null);
     
-    // シンプルな電子的なクリック音を生成（外部ファイル不要）
-    const playTick = useCallback(() => {
+    // より「カチッ」とした機械的でシャープなクリック音を生成
+    const playClick = useCallback(() => {
         if (!audioContext.current) {
             audioContext.current = new (window.AudioContext || window.webkitAudioContext)();
         }
@@ -17,18 +17,20 @@ export function useSFX() {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(800, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.05);
+        // 矩形波と急激な周波数変化で「カチッ」というアタック感を作る
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(1200, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.015);
         
-        gain.gain.setValueAtTime(0.1, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
+        // 非常に短い時間で音量を減衰させる
+        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.015);
         
         osc.connect(gain);
         gain.connect(ctx.destination);
         
         osc.start();
-        osc.stop(ctx.currentTime + 0.05);
+        osc.stop(ctx.currentTime + 0.015);
     }, []);
 
     // 外部ファイル（陶器の音など）を再生する場合の関数

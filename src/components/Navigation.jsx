@@ -3,10 +3,10 @@ import { motion } from 'framer-motion';
 import { useSFX } from '../hooks/useSFX';
 
 export default function Navigation({ onNavigate }) {
-    const { playTick } = useSFX();
+    const { playClick } = useSFX();
 
     const handleNavigate = (page) => {
-        playTick();
+        playClick();
         onNavigate(page);
     };
 

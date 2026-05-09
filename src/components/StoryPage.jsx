@@ -23,18 +23,18 @@ export default function StoryPage({ onBack }) {
                 style={{ scaleX: useScrollProgress() }}
             />
 
-            {/* 戻るボタン (固定) */}
+            {/* 戻るボタン (固定・AudioToggleとの被りを防ぐため右上に配置) */}
             <motion.nav
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="fixed top-8 left-8 md:top-12 md:left-12 z-[60]"
+                className="fixed top-8 right-8 md:top-12 md:right-12 z-[60]"
             >
                 <button
                     onClick={onBack}
                     className="group flex items-center gap-4 text-[10px] tracking-[0.4em] text-white/50 hover:text-white transition-colors uppercase"
                 >
-                    <div className="w-8 h-[1px] bg-white/20 group-hover:w-12 group-hover:bg-white transition-all duration-500" />
                     Back
+                    <div className="w-8 h-[1px] bg-white/20 group-hover:w-12 group-hover:bg-white transition-all duration-500" />
                 </button>
             </motion.nav>
 

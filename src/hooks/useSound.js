@@ -30,6 +30,11 @@ export function useSound(src, options = {}) {
         
         if (fadeInterval.current) clearInterval(fadeInterval.current);
         
+        // 音量が0より大きく設定され、かつ現在停止している場合は再生を再開する
+        if (targetVolume > 0 && audioRef.current.paused) {
+            audioRef.current.play().catch(e => console.warn("Audio resume blocked", e));
+        }
+
         const step = 0.02;
         fadeInterval.current = setInterval(() => {
             if (!audioRef.current) {
@@ -42,6 +47,10 @@ export function useSound(src, options = {}) {
                 audioRef.current.volume = targetVolume;
                 setVolume(targetVolume);
                 clearInterval(fadeInterval.current);
+                // 完全に音量が0になったらリソース節約と確実な消音のためにpauseを呼ぶ
+                if (targetVolume === 0) {
+                    audioRef.current.pause();
+                }
             } else {
                 const nextVol = currentVol + (targetVolume > currentVol ? step : -step);
                 audioRef.current.volume = Math.max(0, Math.min(1, nextVol));
