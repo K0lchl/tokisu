@@ -86,11 +86,11 @@ export function useSound(src, options = {}) {
         if (!audioRef.current) return;
         audioRef.current.play().then(() => {
             setIsPlaying(true);
-            fade(maxVolume, 2000);
+            // 自動フェードはApp.jsxのuseEffect(ダイナミックミキシング)に任せるため削除
         }).catch(err => {
             console.warn("Audio play blocked by browser", err);
         });
-    }, [fade, maxVolume]);
+    }, []);
 
     const stop = useCallback(() => {
         // Ambient Off時は即座(300ms)に消音する
