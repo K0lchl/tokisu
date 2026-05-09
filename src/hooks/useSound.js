@@ -1,19 +1,20 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 
 /**
  * 高級感のある音響体験を管理するフック
  * - 音量のフェードイン・フェードアウト
  * - ブラウザのオートプレイ制限への対応
  */
-export function useSound(src, options = { loop: true, initialVolume: 0 }) {
+export function useSound(src, options = {}) {
+    const { loop = true, initialVolume = 0, maxVolume = 0.6 } = options;
     const audioRef = useRef(null);
     const [isPlaying, setIsPlaying] = useState(false);
-    const [volume, setVolume] = useState(options.initialVolume);
+    const [volume, setVolume] = useState(initialVolume);
     const fadeInterval = useRef(null);
 
     useEffect(() => {
         const audio = new Audio(src);
-        audio.loop = options.loop;
+        audio.loop = loop;
         audio.volume = volume;
         audioRef.current = audio;
 
@@ -22,16 +23,14 @@ export function useSound(src, options = { loop: true, initialVolume: 0 }) {
             audio.pause();
             audioRef.current = null;
         };
-    }, [src, options.loop]);
+    }, [src, loop]);
 
-    const fade = (targetVolume, duration = 2000) => {
+    const fade = useCallback((targetVolume, duration = 2000) => {
         if (!audioRef.current) return;
         
         if (fadeInterval.current) clearInterval(fadeInterval.current);
         
-        const step = 0.02; // より滑らかに
-        const intervalTime = duration / (Math.abs(targetVolume - audioRef.current.volume) / step || 100);
-        
+        const step = 0.02;
         fadeInterval.current = setInterval(() => {
             if (!audioRef.current) {
                 clearInterval(fadeInterval.current);
@@ -43,40 +42,44 @@ export function useSound(src, options = { loop: true, initialVolume: 0 }) {
                 audioRef.current.volume = targetVolume;
                 setVolume(targetVolume);
                 clearInterval(fadeInterval.current);
-                if (targetVolume === 0 && isPlaying) {
-                    // 音量が0になったら一時停止（ただしisPlayingの状態は維持してフェードインしやすくする）
-                    // audioRef.current.pause(); 
-                }
             } else {
                 const nextVol = currentVol + (targetVolume > currentVol ? step : -step);
                 audioRef.current.volume = Math.max(0, Math.min(1, nextVol));
                 setVolume(nextVol);
             }
         }, 30);
-    };
+    }, []);
 
-    const fadeTo = (targetVolume, duration) => {
+    const fadeTo = useCallback((targetVolume, duration) => {
         fade(targetVolume, duration);
-    };
+    }, [fade]);
 
-    const play = () => {
+    const play = useCallback(() => {
         if (!audioRef.current) return;
         audioRef.current.play().then(() => {
             setIsPlaying(true);
-            fade(options.maxVolume || 0.6);
+            fade(maxVolume);
         }).catch(err => {
             console.warn("Audio play blocked by browser", err);
         });
-    };
+    }, [fade, maxVolume]);
 
-    const stop = () => {
+    const stop = useCallback(() => {
         fade(0);
-    };
+        setIsPlaying(false);
+    }, [fade]);
 
-    const toggle = () => {
+    const toggle = useCallback(() => {
         if (isPlaying) stop();
         else play();
-    };
+    }, [isPlaying, play, stop]);
 
-    return { isPlaying, volume, play, stop, toggle };
+    return useMemo(() => ({ 
+        isPlaying, 
+        volume, 
+        play, 
+        stop, 
+        toggle, 
+        fadeTo 
+    }), [isPlaying, volume, play, stop, toggle, fadeTo]);
 }
