@@ -46,10 +46,10 @@ export default function App() {
     if (activePage === 'story') {
       // ストーリーページ：完全に海の音のみにする
       kilnSound.fadeTo(0.0, 2000);
-      oceanSound.fadeTo(0.6, 2000);
+      oceanSound.fadeTo(0.4, 2000); // 海の音を少し控えめに
     } else if (activePage === 'main') {
-      // メインシーン：完全に窯の音のみにする
-      kilnSound.fadeTo(0.5, 2000);
+      // メインシーン：完全に窯の音のみにする（窯の音を大きく）
+      kilnSound.fadeTo(1.0, 2000);
       oceanSound.fadeTo(0.0, 2000);
     } else {
       // その他のページ（Contact, Shop等）は静寂を重視
