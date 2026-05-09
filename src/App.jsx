@@ -44,13 +44,13 @@ export default function App() {
     if (!hasInteracted || !kilnSound.isPlaying) return;
 
     if (activePage === 'story') {
-      // ストーリーページでは窯の音を完全に遠ざけ、海の音を強める
-      kilnSound.fadeTo(0.0, 3000);
-      oceanSound.fadeTo(0.6, 3000);
+      // ストーリーページ：完全に海の音のみにする
+      kilnSound.fadeTo(0.0, 2000);
+      oceanSound.fadeTo(0.6, 2000);
     } else if (activePage === 'main') {
-      // メインシーンでは窯の音を主役に、海の音はかすかに
+      // メインシーン：完全に窯の音のみにする
       kilnSound.fadeTo(0.5, 2000);
-      oceanSound.fadeTo(0.1, 2000);
+      oceanSound.fadeTo(0.0, 2000);
     } else {
       // その他のページ（Contact, Shop等）は静寂を重視
       kilnSound.fadeTo(0.0, 2000);
