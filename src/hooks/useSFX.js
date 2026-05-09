@@ -40,5 +40,5 @@ export function useSFX() {
         audio.play().catch(e => console.log("SFX play blocked", e));
     }, []);
 
-    return { playTick, playSound };
+    return { playClick, playSound };
 }
