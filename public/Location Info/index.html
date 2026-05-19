@@ -681,11 +681,15 @@
             updateDistance();
             updateMap();
           },
-          (err) => console.warn('GPS Error:', err),
+          (err) => {
+            console.warn('GPS Error:', err);
+            showAlert('GPSエラー', '位置情報の取得に失敗しました。スマホの設定で位置情報の利用を許可してください。');
+          },
           { enableHighAccuracy: true, maximumAge: 0 }
         );
+      } else {
+        showAlert('非対応', 'お使いのブラウザは位置情報に対応していません。');
       }
-
     }
 
     function updateDistance() {
