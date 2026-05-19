@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Buddy Tracker - 相棒見守りシステム</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
     :root {
       --bg-color: #0f172a;
@@ -19,7 +22,11 @@
       --warning: #f59e0b;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     body {
       font-family: 'Inter', sans-serif;
@@ -44,7 +51,7 @@
       width: 100%;
       max-width: 400px;
       margin-bottom: 20px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
       transition: all 0.3s ease;
     }
 
@@ -58,7 +65,7 @@
       background-clip: text;
       -webkit-text-fill-color: transparent;
     }
-    
+
     .subtitle {
       text-align: center;
       font-size: 0.85rem;
@@ -74,8 +81,16 @@
       margin-right: 8px;
       box-shadow: 0 0 10px currentColor;
     }
-    .status-dot.offline { color: var(--danger); background: var(--danger); }
-    .status-dot.online { color: var(--safe); background: var(--safe); }
+
+    .status-dot.offline {
+      color: var(--danger);
+      background: var(--danger);
+    }
+
+    .status-dot.online {
+      color: var(--safe);
+      background: var(--safe);
+    }
 
     .status-text {
       font-size: 0.9rem;
@@ -85,7 +100,7 @@
       justify-content: center;
       margin-bottom: 20px;
       padding: 10px;
-      background: rgba(0,0,0,0.2);
+      background: rgba(0, 0, 0, 0.2);
       border-radius: 12px;
     }
 
@@ -104,8 +119,8 @@
 
     input {
       width: 100%;
-      background: rgba(0,0,0,0.3);
-      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.2);
       color: white;
       padding: 12px 16px;
       border-radius: 12px;
@@ -113,6 +128,7 @@
       outline: none;
       transition: border-color 0.2s;
     }
+
     input:focus {
       border-color: var(--accent);
     }
@@ -130,15 +146,17 @@
       box-shadow: 0 4px 15px var(--accent-glow);
       transition: transform 0.1s, box-shadow 0.2s;
     }
+
     button:active {
       transform: translateY(2px);
     }
+
     button:disabled {
       background: #475569;
       box-shadow: none;
       cursor: not-allowed;
     }
-    
+
     .btn-secondary {
       background: transparent;
       border: 1px solid var(--accent);
@@ -147,15 +165,15 @@
 
     .radar-container {
       position: relative;
-      width: 200px;
-      height: 200px;
-      margin: 30px auto;
+      width: 150px;
+      height: 150px;
+      margin: 10px auto 20px;
       border-radius: 50%;
-      border: 2px solid rgba(255,255,255,0.1);
+      border: 2px solid rgba(255, 255, 255, 0.1);
       display: flex;
       align-items: center;
       justify-content: center;
-      background: radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%);
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
     }
 
     .radar-pulse {
@@ -169,20 +187,36 @@
     }
 
     @keyframes pulse {
-      0% { transform: scale(0.3); opacity: 0.8; }
-      100% { transform: scale(1.5); opacity: 0; }
+      0% {
+        transform: scale(0.3);
+        opacity: 0.8;
+      }
+
+      100% {
+        transform: scale(1.5);
+        opacity: 0;
+      }
     }
 
     .distance-display {
-      font-size: 2rem;
+      font-size: 1.8rem;
       font-weight: 800;
       z-index: 10;
-      text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
     }
 
     .distance-unit {
-      font-size: 0.9rem;
+      font-size: 0.8rem;
       color: var(--text-sub);
+    }
+
+    #map {
+      width: 100%;
+      height: 250px;
+      border-radius: 16px;
+      margin-top: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 5;
     }
 
     .info-grid {
@@ -193,17 +227,19 @@
     }
 
     .info-card {
-      background: rgba(0,0,0,0.2);
+      background: rgba(0, 0, 0, 0.2);
       padding: 16px;
       border-radius: 16px;
       text-align: center;
     }
+
     .info-card span {
       display: block;
       font-size: 0.75rem;
       color: var(--text-sub);
       margin-bottom: 4px;
     }
+
     .info-card strong {
       font-size: 1.1rem;
     }
@@ -211,8 +247,11 @@
     /* Modal / Alert */
     .alert-modal {
       position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.8);
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
       backdrop-filter: blur(8px);
       display: flex;
       align-items: center;
@@ -222,10 +261,12 @@
       pointer-events: none;
       transition: opacity 0.3s;
     }
+
     .alert-modal.active {
       opacity: 1;
       pointer-events: auto;
     }
+
     .alert-content {
       background: #1e293b;
       padding: 30px;
@@ -237,29 +278,76 @@
       transform: translateY(20px);
       transition: transform 0.3s;
     }
+
     .alert-modal.active .alert-content {
       transform: translateY(0);
     }
+
     .alert-icon {
       font-size: 3rem;
       margin-bottom: 16px;
     }
+
     .alert-title {
       color: var(--danger);
       font-size: 1.2rem;
       margin-bottom: 10px;
     }
+
     .alert-desc {
       font-size: 0.9rem;
       color: var(--text-sub);
       margin-bottom: 20px;
       line-height: 1.5;
     }
-    
-    .battery-warning { color: var(--warning); border-color: var(--warning); box-shadow: 0 0 30px rgba(245, 158, 11, 0.3); }
-    .battery-warning .alert-title { color: var(--warning); }
+
+
+
+    /* Modal / Backdrop for Nav */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 150;
+      display: none;
+    }
+
+    .modal-backdrop.active {
+      display: block;
+    }
+
+    select {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 1rem;
+      outline: none;
+      appearance: none;
+    }
+
+    select option {
+      background: #1e293b;
+    }
+
+    /* Leaflet customization */
+    .leaflet-container {
+      background: #1e293b;
+    }
+
+    .leaflet-tile {
+      filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+    }
   </style>
 </head>
+
 <body>
 
   <div class="glass-panel" id="setup-panel">
@@ -276,6 +364,8 @@
       <input type="text" id="my-id" readonly placeholder="生成中...">
     </div>
 
+    <button id="invite-btn" class="btn-secondary" style="margin-top: 0; margin-bottom: 20px;">招待リンクを共有</button>
+
     <div class="input-group">
       <label>相手のIDを入力して接続</label>
       <input type="text" id="partner-id" placeholder="相手のIDをペースト">
@@ -287,8 +377,8 @@
   <div class="glass-panel" id="tracking-panel" style="display: none;">
     <h1>Buddy Tracker</h1>
     <div class="status-text">
-      <span class="status-dot online"></span>
-      <span>接続済み・監視中</span>
+      <span class="status-dot online" id="tracking-dot"></span>
+      <span id="tracking-status">接続済み・監視中</span>
     </div>
 
     <div class="radar-container">
@@ -297,16 +387,61 @@
       <div class="distance-display" id="distance-text">--<span class="distance-unit">m</span></div>
     </div>
 
-    <div class="info-grid">
-      <div class="info-card">
-        <span>相手のバッテリー</span>
-        <strong id="partner-battery">--%</strong>
-      </div>
-      <div class="info-card">
-        <span>あなたのバッテリー</span>
-        <strong id="my-battery">--%</strong>
-      </div>
+    <div id="map"></div>
+
+
+    <button id="nav-modal-btn" style="margin-top: 20px; background: linear-gradient(135deg, #3b82f6, #8b5cf6);">📍
+      ルート＆ARナビを開始</button>
+    <button onclick="disconnectAndClear()" class="btn-secondary"
+      style="margin-top: 10px; font-size: 0.8rem; padding: 8px;">ペアリングを解除して戻る</button>
+  </div>
+
+  <!-- Navigation Setup Modal -->
+  <div class="modal-backdrop" id="nav-backdrop"></div>
+  <div class="glass-panel" id="nav-modal"
+    style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 200; margin: 0; width: 90%;">
+    <h2>ナビゲーション</h2>
+    <div class="subtitle" style="margin-bottom: 16px;">相手の場所までのルートを選択</div>
+
+    <div class="input-group">
+      <label>移動手段</label>
+      <select id="travel-mode">
+        <option value="walking">🚶 徒歩</option>
+        <option value="driving">🚗 車</option>
+        <option value="transit">🚌 公共交通機関</option>
+      </select>
     </div>
+
+    <button id="start-ar-btn" style="margin-top: 10px;">📷 アプリ内ARモード (方向指示)</button>
+    <button id="start-gmaps-btn" class="btn-secondary" style="margin-top: 10px;">🗺️ Google Mapsでルート案内</button>
+    <button id="close-nav-modal-btn" class="btn-secondary"
+      style="margin-top: 10px; border-color: transparent;">キャンセル</button>
+  </div>
+
+  <!-- AR Camera View -->
+  <div id="ar-view"
+    style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 300; background: #000;">
+    <video id="ar-video" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
+
+    <div
+      style="position: absolute; top: 40px; left: 0; right: 0; z-index: 310; text-align: center; color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.8);">
+      <h2 style="margin-bottom: 5px;">ARナビゲーション</h2>
+      <div style="font-size: 1.5rem; font-weight: bold;">相手まで: <span id="ar-distance">--</span><span
+          class="distance-unit">m</span></div>
+    </div>
+
+    <div
+      style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 310; display: flex; flex-direction: column; align-items: center; width: 100%;">
+      <div id="ar-arrow"
+        style="font-size: 120px; transition: transform 0.2s ease-out; text-shadow: 0 10px 30px rgba(0,0,0,0.5);">⬆️
+      </div>
+      <div id="ar-instruction"
+        style="margin-top: 20px; font-size: 1.2rem; font-weight: 600; color: #fff; text-shadow: 0 2px 5px rgba(0,0,0,0.8); background: rgba(0,0,0,0.5); padding: 8px 16px; border-radius: 20px; backdrop-filter: blur(4px);">
+        方向を取得中...</div>
+    </div>
+
+    <button id="close-ar-btn"
+      style="position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%); z-index: 310; width: 80%; max-width: 300px; background: rgba(239, 68, 68, 0.9); box-shadow: 0 4px 15px rgba(239,68,68,0.4);">ナビを終了</button>
   </div>
 
   <!-- Alert Modal -->
@@ -325,234 +460,436 @@
     let conn = null;
     let myLocation = { lat: null, lon: null, speed: 0 };
     let partnerLocation = { lat: null, lon: null, speed: 0 };
-    let partnerBattery = null;
-    
+
+    // Map State
+    let map = null;
+    let myMarker = null;
+    let partnerMarker = null;
+
     // Config
-    const DISTANCE_THRESHOLD = 30; // meters (離れたと判定する距離)
-    const BATTERY_THRESHOLD = 15; // percent (最期の叫びを上げるバッテリー残量)
+    const DISTANCE_THRESHOLD = 30; // meters
     let isSeparatedAlertTriggered = false;
-    let isBatteryAlertTriggered = false;
 
     // Elements
     const elMyId = document.getElementById('my-id');
     const elPartnerId = document.getElementById('partner-id');
     const elConnectBtn = document.getElementById('connect-btn');
+    const elInviteBtn = document.getElementById('invite-btn');
     const elSetupPanel = document.getElementById('setup-panel');
     const elTrackingPanel = document.getElementById('tracking-panel');
     const elConnStatus = document.getElementById('conn-status');
-    const elConnDot = document.getElementById('conn-dot');
     const elDistance = document.getElementById('distance-text');
-    const elPartnerBattery = document.getElementById('partner-battery');
-    const elMyBattery = document.getElementById('my-battery');
     const elAlertModal = document.getElementById('alert-modal');
 
     // Initialize PeerJS
     function initPeer() {
-      // 誰でも使えるパブリックなPeerサーバーを利用
-      peer = new Peer({ debug: 2 });
+      const savedId = localStorage.getItem('buddy_tracker_peer_id');
+      peer = new Peer(savedId || undefined, { debug: 1 });
 
       peer.on('open', (id) => {
         elMyId.value = id;
+        localStorage.setItem('buddy_tracker_peer_id', id);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const autoPartnerId = urlParams.get('partnerId');
+        const savedPartnerId = localStorage.getItem('buddy_tracker_partner_id');
+
+        if (autoPartnerId && !conn) {
+          elPartnerId.value = autoPartnerId;
+          connectToPartner(autoPartnerId);
+        } else if (savedPartnerId && !conn) {
+          // Auto connect to saved partner
+          elPartnerId.value = savedPartnerId;
+          connectToPartner(savedPartnerId);
+        }
       });
 
-      // 相手から接続された時
       peer.on('connection', (connection) => {
+        if (conn) conn.close();
         conn = connection;
+        localStorage.setItem('buddy_tracker_partner_id', conn.peer);
         setupConnection();
       });
 
       peer.on('error', (err) => {
-        console.error(err);
-        alert('エラーが発生しました: ' + err.type);
+        if (err.type === 'id-taken') {
+          localStorage.removeItem('buddy_tracker_peer_id');
+          initPeer();
+        } else if (err.type === 'peer-unavailable') {
+          console.warn('Partner offline. Waiting for them to connect...');
+          elConnectBtn.innerText = 'ペアリングする';
+          elConnectBtn.disabled = false;
+        } else {
+          console.warn('Error: ' + err.type);
+        }
       });
+
+      // Background reconnect loop
+      setInterval(() => {
+        const savedPartnerId = localStorage.getItem('buddy_tracker_partner_id');
+        // Try reconnecting if we have a saved partner but no open connection
+        if (savedPartnerId && elTrackingPanel.style.display === 'block' && (!conn || !conn.open)) {
+          console.log('Attempting auto-reconnect...');
+          connectToPartner(savedPartnerId);
+        }
+      }, 5000);
     }
 
-    // Connect to Partner
-    elConnectBtn.addEventListener('click', () => {
-      const partnerId = elPartnerId.value.trim();
-      if (!partnerId) return alert('相手のIDを入力してください');
-      
+    // Connect logic
+    function connectToPartner(id) {
+      if (!id) return;
       elConnectBtn.innerText = '接続中...';
       elConnectBtn.disabled = true;
 
-      conn = peer.connect(partnerId);
+      conn = peer.connect(id);
       conn.on('open', () => {
+        localStorage.setItem('buddy_tracker_partner_id', id);
         setupConnection();
       });
+      conn.on('error', (err) => {
+        alert('接続に失敗しました。');
+        elConnectBtn.innerText = 'ペアリングする';
+        elConnectBtn.disabled = false;
+      });
+    }
+
+    function disconnectAndClear() {
+      localStorage.removeItem('buddy_tracker_partner_id');
+      location.reload();
+    }
+
+    elConnectBtn.addEventListener('click', () => {
+      connectToPartner(elPartnerId.value.trim());
     });
 
+    // Invite Link logic
+    elInviteBtn.addEventListener('click', async () => {
+      const myId = elMyId.value;
+      if (!myId) return;
+      const baseUrl = window.location.origin + window.location.pathname;
+      const inviteUrl = `${baseUrl}?partnerId=${myId}`;
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: 'Buddy Tracker 招待',
+            text: '相棒見守りアプリの招待リンクです。',
+            url: inviteUrl,
+          });
+        } catch (err) {
+          copyToClipboard(inviteUrl);
+        }
+      } else {
+        copyToClipboard(inviteUrl);
+      }
+    });
+
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        alert('リンクをコピーしました。LINE等で送ってください。');
+      });
+    }
+
+    // Map Initialization
+    function initMap() {
+      if (map) return;
+      map = L.map('map').setView([0, 0], 2);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(map);
+
+      myMarker = L.circleMarker([0, 0], { color: '#3b82f6', radius: 8, fillOpacity: 0.8 }).addTo(map).bindPopup('あなた');
+      partnerMarker = L.circleMarker([0, 0], { color: '#ef4444', radius: 8, fillOpacity: 0.8 }).addTo(map).bindPopup('相手');
+    }
+
+    function updateMap() {
+      if (!map) initMap();
+      const points = [];
+
+      if (myLocation.lat) {
+        myMarker.setLatLng([myLocation.lat, myLocation.lon]);
+        points.push([myLocation.lat, myLocation.lon]);
+      }
+      if (partnerLocation.lat) {
+        partnerMarker.setLatLng([partnerLocation.lat, partnerLocation.lon]);
+        points.push([partnerLocation.lat, partnerLocation.lon]);
+      }
+
+      if (points.length > 0) {
+        const bounds = L.latLngBounds(points);
+        if (points.length === 1) {
+          map.setView(points[0], 15);
+        } else {
+          map.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 });
+        }
+      }
+    }
+
     // Setup Connection logic
+    let syncInterval = null;
+
     function setupConnection() {
       elSetupPanel.style.display = 'none';
       elTrackingPanel.style.display = 'block';
-      
+
+      document.getElementById('tracking-dot').className = 'status-dot online';
+      document.getElementById('tracking-status').innerText = '接続済み・監視中';
+
+      if (window.location.search) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+
       conn.on('data', (data) => {
         handleIncomingData(data);
       });
 
       conn.on('close', () => {
-        alert('相手との接続が切れました');
-        location.reload();
+        document.getElementById('tracking-dot').className = 'status-dot offline';
+        document.getElementById('tracking-status').innerText = '相手がオフラインです（自動再接続待機中...）';
       });
 
-      // Start Tracking
+      initMap();
       startTracking();
-      
-      // 送信ループ
-      setInterval(() => {
-        if(myLocation.lat && conn && conn.open) {
+
+      if (syncInterval) clearInterval(syncInterval);
+      syncInterval = setInterval(() => {
+        if (myLocation.lat && conn && conn.open) {
           conn.send({
             type: 'sync',
-            loc: myLocation,
-            battery: parseInt(elMyBattery.innerText) || null
+            loc: myLocation
           });
         }
       }, 3000);
     }
 
-    // Handle Data from Partner
     function handleIncomingData(data) {
       if (data.type === 'sync') {
         partnerLocation = data.loc;
-        if(data.battery !== null) {
-          elPartnerBattery.innerText = data.battery + '%';
-          checkBatteryAlert(data.battery);
-        }
         updateDistance();
-      } else if (data.type === 'battery_death') {
-        showAlert('📱 最期の叫び', '相手のスマホのバッテリーがまもなく切れます！最後に確認された場所に注意してください。', true);
+        updateMap();
       }
     }
 
-    // Start GPS & Battery Tracking
     function startTracking() {
-      // Location
       if (navigator.geolocation) {
         navigator.geolocation.watchPosition(
           (pos) => {
             myLocation = {
               lat: pos.coords.latitude,
               lon: pos.coords.longitude,
-              speed: pos.coords.speed || 0 // m/s
+              speed: pos.coords.speed || 0
             };
             updateDistance();
+            updateMap();
           },
-          (err) => {
-            console.warn('GPSエラー:', err);
-          },
+          (err) => console.warn('GPS Error:', err),
           { enableHighAccuracy: true, maximumAge: 0 }
         );
-      } else {
-        alert("お使いの端末はGPSに対応していません。");
       }
 
-      // Battery (一部のブラウザのみ対応)
-      if (navigator.getBattery) {
-        navigator.getBattery().then(battery => {
-          updateBattery(battery);
-          battery.addEventListener('levelchange', () => updateBattery(battery));
-        });
-      } else {
-        elMyBattery.innerText = "非対応";
-      }
     }
 
-    function updateBattery(battery) {
-      const level = Math.round(battery.level * 100);
-      elMyBattery.innerText = level + '%';
-      
-      // 自分のバッテリーが死にそうな時、1回だけ「最期の叫び」を送る
-      if (level <= BATTERY_THRESHOLD && !isBatteryAlertTriggered && conn && conn.open) {
-        conn.send({ type: 'battery_death' });
-        isBatteryAlertTriggered = true;
-      }
-    }
-
-    function checkBatteryAlert(partnerLevel) {
-      if (partnerLevel <= BATTERY_THRESHOLD && !isBatteryAlertTriggered) {
-        showAlert('🔋 バッテリー低下', '相手のスマホの充電が' + partnerLevel + '%以下です！', true);
-        isBatteryAlertTriggered = true; // 1回だけ通知
-      }
-    }
-
-    // Calculate Distance and check logic
     function updateDistance() {
       if (!myLocation.lat || !partnerLocation.lat) return;
-
       const d = getDistanceFromLatLonInM(
         myLocation.lat, myLocation.lon,
         partnerLocation.lat, partnerLocation.lon
       );
-
       elDistance.innerHTML = Math.round(d) + '<span class="distance-unit">m</span>';
 
-      // 置き忘れ判定ロジック
       if (d > DISTANCE_THRESHOLD && !isSeparatedAlertTriggered) {
-        // 相手が静止(speedほぼ0)で、自分が移動している場合は「置き忘れ」の可能性大
-        // ※ここでは簡易的に距離が離れたらアラートを出す
-        let isPartnerStill = partnerLocation.speed < 0.5;
-        let amIMoving = myLocation.speed > 0.5;
-        
-        if (isPartnerStill) {
-          showAlert('📱 置き忘れ注意！', '相手のスマホが動いていません。お店などに置き忘れていませんか？');
+        if (partnerLocation.speed < 0.5) {
+          showAlert('📱 置き忘れ注意！', '相手のスマホが動いていません。');
         } else {
-          // 両方動いていたら解散とみなす（通知を控えめにするなど）
-          // 今回はテストのためとりあえず通知
-          showAlert('👋 お別れ？', '相手と距離が離れました。解散ですか？');
+          showAlert('👋 お別れ？', '相手と距離が離れました。');
         }
-        
-        isSeparatedAlertTriggered = true; 
-        // （本来なら再び近づいた時にフラグをリセットする処理が必要）
+        isSeparatedAlertTriggered = true;
       } else if (d < DISTANCE_THRESHOLD) {
-        // 再び近づいたらフラグをリセット
         isSeparatedAlertTriggered = false;
       }
     }
 
-    // Haversine formula
     function getDistanceFromLatLonInM(lat1, lon1, lat2, lon2) {
-      const R = 6371e3; 
-      const dLat = (lat2-lat1) * (Math.PI/180);
-      const dLon = (lon2-lon1) * (Math.PI/180); 
-      const a = 
-        Math.sin(dLat/2) * Math.sin(dLat/2) +
-        Math.cos(lat1 * (Math.PI/180)) * Math.cos(lat2 * (Math.PI/180)) * 
-        Math.sin(dLon/2) * Math.sin(dLon/2); 
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-      return R * c; 
+      const R = 6371e3;
+      const dLat = (lat2 - lat1) * (Math.PI / 180);
+      const dLon = (lon2 - lon1) * (Math.PI / 180);
+      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
     }
 
-    // UI Utilities
     elMyId.addEventListener('click', () => {
       navigator.clipboard.writeText(elMyId.value);
-      alert('あなたのIDをコピーしました！相手にLINE等で送ってください。');
+      alert('IDをコピーしました！');
     });
 
-    function showAlert(title, desc, isWarning=false) {
+    function showAlert(title, desc) {
       const content = document.getElementById('alert-content');
       document.getElementById('alert-title').innerText = title;
       document.getElementById('alert-desc').innerText = desc;
-      
-      if(isWarning) {
-        content.classList.add('battery-warning');
-        document.getElementById('alert-icon').innerText = '🔋';
-      } else {
-        content.classList.remove('battery-warning');
-        document.getElementById('alert-icon').innerText = '⚠️';
-      }
-      
+      document.getElementById('alert-icon').innerText = '⚠️';
       elAlertModal.classList.add('active');
-      // バイブレーション（対応機種のみ）
-      if(navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
     }
 
     function closeAlert() {
       elAlertModal.classList.remove('active');
     }
 
-    // 起動
-    initPeer();
+    // --- AR & Navigation Logic ---
+    const elNavModalBtn = document.getElementById('nav-modal-btn');
+    const elNavModal = document.getElementById('nav-modal');
+    const elNavBackdrop = document.getElementById('nav-backdrop');
+    const elCloseNavModalBtn = document.getElementById('close-nav-modal-btn');
+    const elStartArBtn = document.getElementById('start-ar-btn');
+    const elStartGmapsBtn = document.getElementById('start-gmaps-btn');
+    const elTravelMode = document.getElementById('travel-mode');
 
+    const elArView = document.getElementById('ar-view');
+    const elArVideo = document.getElementById('ar-video');
+    const elArArrow = document.getElementById('ar-arrow');
+    const elArDistance = document.getElementById('ar-distance');
+    const elArInstruction = document.getElementById('ar-instruction');
+    const elCloseArBtn = document.getElementById('close-ar-btn');
+
+    let arStream = null;
+    let deviceHeading = null;
+
+    // Open/Close Modal
+    elNavModalBtn.addEventListener('click', () => {
+      if (!partnerLocation.lat) {
+        alert('相手の位置情報がまだ取得できていません。');
+        return;
+      }
+      elNavModal.style.display = 'block';
+      elNavBackdrop.classList.add('active');
+    });
+
+    function closeNavModal() {
+      elNavModal.style.display = 'none';
+      elNavBackdrop.classList.remove('active');
+    }
+    elCloseNavModalBtn.addEventListener('click', closeNavModal);
+    elNavBackdrop.addEventListener('click', closeNavModal);
+
+    // Launch Google Maps
+    elStartGmapsBtn.addEventListener('click', () => {
+      const mode = elTravelMode.value; // walking, driving, transit
+      const destLat = partnerLocation.lat;
+      const destLon = partnerLocation.lon;
+      const url = `https://www.google.com/maps/dir/?api=1&destination=${destLat},${destLon}&travelmode=${mode}`;
+      window.open(url, '_blank');
+      closeNavModal();
+    });
+
+    // Start Built-in AR
+    elStartArBtn.addEventListener('click', async () => {
+      closeNavModal();
+
+      // Request Camera
+      try {
+        arStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        elArVideo.srcObject = arStream;
+        elArView.style.display = 'block';
+      } catch (err) {
+        alert('カメラへのアクセスが拒否されたか、エラーが発生しました。');
+        return;
+      }
+
+      // Request Compass (Device Orientation)
+      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        try {
+          const permission = await DeviceOrientationEvent.requestPermission();
+          if (permission === 'granted') {
+            window.addEventListener('deviceorientation', handleOrientation);
+          } else {
+            alert('コンパスのアクセスが許可されませんでした。矢印が正しく動作しません。');
+          }
+        } catch (e) {
+          console.error(e);
+          alert('コンパスの起動に失敗しました。');
+        }
+      } else {
+        // Non-iOS devices
+        window.addEventListener('deviceorientationabsolute', handleOrientation);
+        window.addEventListener('deviceorientation', handleOrientation);
+      }
+
+      // Start AR update loop
+      requestAnimationFrame(updateARLoop);
+    });
+
+    // Stop AR
+    elCloseArBtn.addEventListener('click', () => {
+      elArView.style.display = 'none';
+      if (arStream) {
+        arStream.getTracks().forEach(track => track.stop());
+      }
+      window.removeEventListener('deviceorientationabsolute', handleOrientation);
+      window.removeEventListener('deviceorientation', handleOrientation);
+    });
+
+    function handleOrientation(event) {
+      let heading = null;
+      if (event.webkitCompassHeading) {
+        // iOS
+        heading = event.webkitCompassHeading;
+      } else if (event.absolute && event.alpha !== null) {
+        // Android absolute
+        heading = 360 - event.alpha;
+      } else if (event.alpha !== null) {
+        // Fallback
+        heading = 360 - event.alpha;
+      }
+      if (heading !== null) {
+        deviceHeading = heading;
+      }
+    }
+
+    function updateARLoop() {
+      if (elArView.style.display === 'none') return;
+
+      if (myLocation.lat && partnerLocation.lat) {
+        const d = getDistanceFromLatLonInM(myLocation.lat, myLocation.lon, partnerLocation.lat, partnerLocation.lon);
+        elArDistance.innerText = Math.round(d);
+
+        if (deviceHeading !== null) {
+          const targetBearing = getBearing(myLocation.lat, myLocation.lon, partnerLocation.lat, partnerLocation.lon);
+
+          let diff = targetBearing - deviceHeading;
+          if (diff > 180) diff -= 360;
+          if (diff < -180) diff += 360;
+
+          elArArrow.style.transform = `rotate(${diff}deg)`;
+
+          if (Math.abs(diff) < 20) {
+            elArInstruction.innerText = '⬆️ まっすぐ進む';
+            elArInstruction.style.color = '#10b981';
+          } else if (diff < 0) {
+            elArInstruction.innerText = '⬅️ 左を向く';
+            elArInstruction.style.color = '#fff';
+          } else {
+            elArInstruction.innerText = '➡️ 右を向く';
+            elArInstruction.style.color = '#fff';
+          }
+        }
+      }
+
+      requestAnimationFrame(updateARLoop);
+    }
+
+    function getBearing(lat1, lon1, lat2, lon2) {
+      const toRad = Math.PI / 180;
+      const toDeg = 180 / Math.PI;
+      const dLon = (lon2 - lon1) * toRad;
+      const y = Math.sin(dLon) * Math.cos(lat2 * toRad);
+      const x = Math.cos(lat1 * toRad) * Math.sin(lat2 * toRad) -
+        Math.sin(lat1 * toRad) * Math.cos(lat2 * toRad) * Math.cos(dLon);
+      let brng = Math.atan2(y, x) * toDeg;
+      return (brng + 360) % 360;
+    }
+
+    initPeer();
   </script>
 </body>
+
 </html>
