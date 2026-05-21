@@ -4,6 +4,7 @@ import { getProductsByArtisan } from '../data/products';
 
 export default function ShopPage({ onBack }) {
     const [selectedProduct, setSelectedProduct] = useState(null);
+    const [selectedArtisan, setSelectedArtisan] = useState(null);
     const artisanGroups = getProductsByArtisan();
     const scrollRef = useRef(null);
 
@@ -52,13 +53,15 @@ export default function ShopPage({ onBack }) {
                                     initial={{ opacity: 0, x: -20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ duration: 1, delay: 0.5 }}
-                                    className="border-l border-white/20 pl-6 py-4"
+                                    onClick={() => setSelectedArtisan(group.artisanInfo)}
+                                    className="border-l border-white/20 pl-6 py-4 cursor-pointer group"
                                 >
-                                    <h2 className="text-sm tracking-[0.4em] text-white/50 mb-2 uppercase">Artisan</h2>
-                                    <p className="text-xl md:text-2xl font-serif tracking-widest leading-relaxed">
-                                        {group.artisanName.split('|')[0].trim()}<br/>
-                                        {group.artisanName.split('|')[1].trim()}
+                                    <h2 className="text-sm tracking-[0.4em] text-white/50 mb-2 uppercase group-hover:text-white transition-colors">Artisan</h2>
+                                    <p className="text-xl md:text-2xl font-serif tracking-widest leading-relaxed group-hover:text-white/80 transition-colors">
+                                        {group.artisanInfo.kiln}<br/>
+                                        {group.artisanInfo.name}
                                     </p>
+                                    <div className="mt-4 w-8 h-[1px] bg-white/20 group-hover:w-16 group-hover:bg-white transition-all duration-500"></div>
                                 </motion.div>
                             </div>
 
@@ -140,6 +143,98 @@ export default function ShopPage({ onBack }) {
                                     <button className="w-full max-w-sm border border-white/30 py-4 text-[10px] tracking-[0.3em] hover:bg-white hover:text-black transition-colors duration-500">
                                         ADD TO CART
                                     </button>
+                                </motion.div>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* 陶芸家プロフィールモーダル */}
+            <AnimatePresence>
+                {selectedArtisan && (
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute inset-0 z-[110] bg-black/95 backdrop-blur-xl flex flex-col pointer-events-auto overflow-y-auto"
+                    >
+                        <button 
+                            onClick={() => setSelectedArtisan(null)}
+                            className="absolute top-10 right-10 text-[10px] tracking-[0.3em] opacity-40 hover:opacity-100 transition-opacity z-10"
+                        >
+                            CLOSE
+                        </button>
+                        
+                        <div className="flex-1 flex flex-col md:flex-row h-full max-w-6xl mx-auto py-20 px-10">
+                            {/* プロフィール画像 */}
+                            <div className="flex-1 p-10 flex flex-col justify-center border-r border-white/10">
+                                <motion.div 
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ duration: 0.8 }}
+                                    className="aspect-[3/4] w-full max-w-sm mx-auto overflow-hidden bg-white/5 grayscale"
+                                >
+                                    <img 
+                                        src={selectedArtisan.image || 'https://via.placeholder.com/600x800/111111/333333?text=ARTISAN'} 
+                                        alt={selectedArtisan.name}
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => { e.target.src = 'https://via.placeholder.com/600x800/111111/333333?text=NO+IMAGE'; }}
+                                    />
+                                </motion.div>
+                            </div>
+                            
+                            {/* テキスト情報 */}
+                            <div className="flex-1 flex flex-col justify-center px-10 md:px-20 pt-10 md:pt-0">
+                                <motion.div
+                                    initial={{ y: 20, opacity: 0 }}
+                                    animate={{ y: 0, opacity: 1 }}
+                                    transition={{ duration: 0.8, delay: 0.2 }}
+                                >
+                                    <p className="text-[10px] tracking-[0.4em] text-white/50 mb-2 uppercase">{selectedArtisan.kiln}</p>
+                                    <h2 className="text-3xl md:text-5xl font-serif tracking-widest mb-12">{selectedArtisan.name}</h2>
+                                    
+                                    {selectedArtisan.comment && (
+                                        <div className="mb-12">
+                                            <h3 className="text-[10px] tracking-[0.3em] text-white/40 mb-4 border-b border-white/10 pb-2">MESSAGE</h3>
+                                            <p className="text-sm text-white/80 leading-loose tracking-widest italic font-serif">
+                                                "{selectedArtisan.comment}"
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {selectedArtisan.bio && (
+                                        <div className="mb-12">
+                                            <h3 className="text-[10px] tracking-[0.3em] text-white/40 mb-4 border-b border-white/10 pb-2">BIOGRAPHY</h3>
+                                            <p className="text-sm text-white/70 leading-loose tracking-widest">
+                                                {selectedArtisan.bio}
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {selectedArtisan.awards && selectedArtisan.awards.length > 0 && (
+                                        <div className="mb-12">
+                                            <h3 className="text-[10px] tracking-[0.3em] text-white/40 mb-4 border-b border-white/10 pb-2">AWARDS</h3>
+                                            <ul className="text-xs text-white/60 leading-loose tracking-widest list-none">
+                                                {selectedArtisan.awards.map((award, i) => (
+                                                    <li key={i}>{award}</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+
+                                    {selectedArtisan.instagram && (
+                                        <div>
+                                            <a 
+                                                href={`https://instagram.com/${selectedArtisan.instagram.replace('@','')}`} 
+                                                target="_blank" 
+                                                rel="noopener noreferrer"
+                                                className="inline-block border border-white/30 px-8 py-3 text-[10px] tracking-[0.3em] hover:bg-white hover:text-black transition-colors duration-500"
+                                            >
+                                                INSTAGRAM
+                                            </a>
+                                        </div>
+                                    )}
                                 </motion.div>
                             </div>
                         </div>
