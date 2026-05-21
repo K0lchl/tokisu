@@ -191,22 +191,42 @@ export default function ShopPage({ onBack }) {
                                     animate={{ y: 0, opacity: 1 }}
                                     transition={{ duration: 0.8, delay: 0.2 }}
                                 >
-                                    <p className="text-[10px] tracking-[0.4em] text-white/50 mb-2 uppercase">{selectedArtisan.kiln}</p>
-                                    <h2 className="text-3xl md:text-5xl font-serif tracking-widest mb-12">{selectedArtisan.name}</h2>
+                                    {selectedArtisan.kilnKana && (
+                                        <p className="text-[9px] tracking-[0.3em] text-white/30 mb-1">{selectedArtisan.kilnKana}</p>
+                                    )}
+                                    <p className="text-lg font-serif tracking-widest text-white/60 mb-1">{selectedArtisan.kiln}</p>
+                                    {selectedArtisan.nameKana && (
+                                        <p className="text-[10px] tracking-[0.2em] text-white/40 mb-2">【{selectedArtisan.name}／{selectedArtisan.nameKana}】</p>
+                                    )}
+                                    <div className="w-12 h-[1px] bg-white/20 my-8"></div>
                                     
-                                    {selectedArtisan.comment && (
+                                    {/* 経歴タイムライン */}
+                                    {selectedArtisan.timeline && selectedArtisan.timeline.length > 0 && (
                                         <div className="mb-12">
-                                            <h3 className="text-[10px] tracking-[0.3em] text-white/40 mb-4 border-b border-white/10 pb-2">MESSAGE</h3>
+                                            <ul className="text-xs text-white/70 leading-relaxed tracking-widest list-none space-y-2">
+                                                {selectedArtisan.timeline.map((entry, i) => (
+                                                    <li key={i} className="flex gap-4">
+                                                        <span className="text-white/40 flex-shrink-0 w-16">{entry.year}</span>
+                                                        <span>{entry.event}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+
+                                    <div className="w-8 h-[1px] bg-white/20 my-8"></div>
+
+                                    {selectedArtisan.comment && (
+                                        <div className="mb-10">
                                             <p className="text-sm text-white/80 leading-loose tracking-widest italic font-serif">
-                                                "{selectedArtisan.comment}"
+                                                {selectedArtisan.comment}
                                             </p>
                                         </div>
                                     )}
 
                                     {selectedArtisan.bio && (
                                         <div className="mb-12">
-                                            <h3 className="text-[10px] tracking-[0.3em] text-white/40 mb-4 border-b border-white/10 pb-2">BIOGRAPHY</h3>
-                                            <p className="text-sm text-white/70 leading-loose tracking-widest">
+                                            <p className="text-xs text-white/60 leading-loose tracking-widest">
                                                 {selectedArtisan.bio}
                                             </p>
                                         </div>
