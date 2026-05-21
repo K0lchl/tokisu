@@ -28,12 +28,12 @@ export default function LegalPage({ onBack }) {
                 >
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-2 border-b border-white/10 pb-4">
                         <div className="text-white/50 text-xs tracking-widest uppercase">販売事業者名</div>
-                        <div className="md:col-span-2">株式会社〇〇（または個人名）</div>
+                        <div className="md:col-span-2">Hidden Link Inc.</div>
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-2 border-b border-white/10 pb-4">
                         <div className="text-white/50 text-xs tracking-widest uppercase">運営責任者名</div>
-                        <div className="md:col-span-2">〇〇 〇〇</div>
+                        <div className="md:col-span-2">圓堂 光一</div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-2 border-b border-white/10 pb-4">
