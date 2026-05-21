@@ -11,6 +11,8 @@ const StoryPage = lazy(() => import('./components/StoryPage'));
 const ARView = lazy(() => import('./components/ARView'));
 const ContactPage = lazy(() => import('./components/ContactPage'));
 const ShopPage = lazy(() => import('./components/ShopPage'));
+const LegalPage = lazy(() => import('./components/LegalPage'));
+const PrivacyPage = lazy(() => import('./components/PrivacyPage'));
 
 export default function App() {
   const [activePage, setActivePage] = useState('main');
@@ -140,6 +142,8 @@ export default function App() {
                 {activePage === 'ar' && <ARView onBack={() => setActivePage('main')} />}
                 {activePage === 'contact' && <ContactPage onBack={() => setActivePage('main')} />}
                 {activePage === 'shop' && <ShopPage onBack={() => setActivePage('main')} />}
+                {activePage === 'legal' && <LegalPage onBack={() => setActivePage('main')} />}
+                {activePage === 'privacy' && <PrivacyPage onBack={() => setActivePage('main')} />}
               </Suspense>
             </motion.div>
           )}

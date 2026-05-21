@@ -56,6 +56,11 @@ export default function Navigation({ onNavigate }) {
                     />
                 </motion.button>
             </div>
+
+            <div className="mt-8 flex gap-6 text-[8px] tracking-[0.3em] text-white/40 uppercase pointer-events-auto">
+                <button onClick={() => handleNavigate('legal')} className="hover:text-white transition-colors">特定商取引法に基づく表記</button>
+                <button onClick={() => handleNavigate('privacy')} className="hover:text-white transition-colors">プライバシーポリシー</button>
+            </div>
         </nav>
     );
 }
