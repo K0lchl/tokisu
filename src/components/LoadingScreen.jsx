@@ -89,12 +89,30 @@ export default function LoadingScreen({ onComplete }) {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
                   onClick={handleStart}
-                  className="group flex flex-col items-center gap-4 focus:outline-none"
+                  className="group flex flex-col items-center gap-3 focus:outline-none"
                 >
-                  <span className="text-[10px] tracking-[0.8em] text-white/50 group-hover:text-white transition-colors uppercase">
-                    Enter Experience
-                  </span>
-                  <div className="w-[1px] h-10 bg-white/20 group-hover:h-16 group-hover:bg-white transition-all duration-700" />
+                  <motion.span
+                    className="text-[11px] tracking-[0.3em] text-white/70 group-hover:text-white transition-colors uppercase font-light"
+                    animate={{ opacity: [0.6, 1, 0.6] }}
+                    transition={{ repeat: Infinity, duration: 2.5 }}
+                  >
+                    Enter
+                  </motion.span>
+                  <motion.div
+                    className="flex flex-col items-center gap-1"
+                    animate={{ y: [0, 4, 0] }}
+                    transition={{ repeat: Infinity, duration: 2 }}
+                  >
+                    <div className="w-[1px] h-6 bg-white/40 group-hover:bg-white transition-all duration-700" />
+                    <svg
+                      className="w-3 h-3 text-white/40 group-hover:text-white transition-colors duration-700"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                  </motion.div>
                 </motion.button>
               )}
             </AnimatePresence>

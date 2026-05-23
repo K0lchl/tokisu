@@ -13,18 +13,6 @@ export default function Navigation({ onNavigate }) {
     return (
         <nav className="absolute bottom-10 md:bottom-16 left-0 right-0 z-30 flex flex-col items-center pointer-events-none px-6">
 
-            {/* プロジェクトの顔としてのタイトル演出 */}
-            <header className="mb-12 text-center">
-                <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 1, delay: 0.5 }}
-                    className="text-[10px] text-white/40 tracking-[0.4em] uppercase font-light"
-                >
-                    The Narrative D2C
-                </motion.p>
-            </header>
-
             <div className="flex flex-col sm:flex-row gap-4 w-full max-w-lg mx-auto pointer-events-auto">
                 <motion.button
                     whileTap={{ scale: 0.95 }}

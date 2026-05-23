@@ -28,7 +28,7 @@ export default function LegalPage({ onBack }) {
                 >
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-2 border-b border-white/10 pb-4">
                         <div className="text-white/50 text-xs tracking-widest uppercase">販売事業者名</div>
-                        <div className="md:col-span-2">Hidden Link Inc.</div>
+                        <div className="md:col-span-2">Hidden Link</div>
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-2 border-b border-white/10 pb-4">
