@@ -1,10 +1,18 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getProductsByArtisan } from '../data/products';
+import { useCart } from '../context/CartContext';
+import CartDrawer from './CartDrawer';
+import CheckoutModal from './CheckoutModal';
 
 export default function ShopPage({ onBack }) {
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [selectedArtisan, setSelectedArtisan] = useState(null);
+    const [isCartOpen, setIsCartOpen] = useState(false);
+    const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+    const [quantity, setQuantity] = useState(1);
+    const [addedMessage, setAddedMessage] = useState(null);
+    const { items, itemCount, addItem } = useCart();
     const artisanGroups = getProductsByArtisan();
     const scrollRef = useRef(null);
 
@@ -29,8 +37,11 @@ export default function ShopPage({ onBack }) {
                 </div>
                 
                 <div className="flex items-center gap-8">
-                    <button className="text-[10px] tracking-[0.2em] text-white/70 hover:text-white transition-colors">
-                        CART (0)
+                    <button
+                        onClick={() => setIsCartOpen(true)}
+                        className="text-[10px] tracking-[0.2em] text-white/70 hover:text-white transition-colors"
+                    >
+                        CART ({itemCount})
                     </button>
                     <button 
                         onClick={onBack}
@@ -139,10 +150,58 @@ export default function ShopPage({ onBack }) {
                                     <p className="text-sm text-white/70 leading-loose tracking-widest mb-12 max-w-md">
                                         {selectedProduct.description}
                                     </p>
-                                    
-                                    <button className="w-full max-w-sm border border-white/30 py-4 text-[10px] tracking-[0.3em] hover:bg-white hover:text-black transition-colors duration-500">
+
+                                    <div className="flex items-center gap-4 mb-8">
+                                        <span className="text-xs tracking-[0.2em] text-white/50 uppercase">Quantity</span>
+                                        <div className="flex items-center border border-white/20 rounded-full">
+                                            <button
+                                                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                                                className="px-4 py-2 text-sm hover:bg-white/10"
+                                            >
+                                                −
+                                            </button>
+                                            <span className="px-4 py-2 text-sm text-white/70">{quantity}</span>
+                                            <button
+                                                onClick={() => setQuantity(quantity + 1)}
+                                                className="px-4 py-2 text-sm hover:bg-white/10"
+                                            >
+                                                +
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        onClick={() => {
+                                            const productData = {
+                                                name: selectedProduct.name,
+                                                price: selectedProduct.price,
+                                                artisan: selectedProduct.artisan,
+                                                kiln: selectedProduct.kiln,
+                                                image: selectedProduct.image,
+                                            };
+                                            addItem(selectedProduct.id, productData, quantity);
+                                            setAddedMessage(true);
+                                            setTimeout(() => setAddedMessage(false), 2000);
+                                            setQuantity(1);
+                                        }}
+                                        className="w-full max-w-sm border border-white/30 py-4 text-[10px] tracking-[0.3em] hover:bg-white hover:text-black transition-colors duration-500"
+                                    >
                                         ADD TO CART
                                     </button>
+
+                                    <AnimatePresence>
+                                        {addedMessage && (
+                                            <motion.p
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0 }}
+                                                transition={{ duration: 0.5 }}
+                                                className="text-xs tracking-[0.2em] text-white/60 mt-4"
+                                            >
+                                                Added to cart ✓
+                                            </motion.p>
+                                        )}
+                                    </AnimatePresence>
                                 </motion.div>
                             </div>
                         </div>
@@ -261,6 +320,27 @@ export default function ShopPage({ onBack }) {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* カートドロワー */}
+            <CartDrawer
+                isOpen={isCartOpen}
+                onClose={() => setIsCartOpen(false)}
+                onCheckout={() => {
+                    setIsCartOpen(false);
+                    setIsCheckoutOpen(true);
+                }}
+            />
+
+            {/* チェックアウトモーダル */}
+            <CheckoutModal
+                isOpen={isCheckoutOpen}
+                onClose={() => setIsCheckoutOpen(false)}
+                onSuccess={(orderData) => {
+                    // 決済成功時の処理
+                    console.log('Order placed:', orderData);
+                    // 必要に応じて確認メール送信API呼び出し
+                }}
+            />
 
             <style jsx>{`
                 .hide-scrollbar::-webkit-scrollbar {

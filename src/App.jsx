@@ -6,6 +6,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import LoadingScreen from './components/LoadingScreen';
 import AudioToggle from './components/AudioToggle';
 import { useSound } from './hooks/useSound';
+import { CartProvider } from './context/CartContext';
 
 const StoryPage = lazy(() => import('./components/StoryPage'));
 const ARView = lazy(() => import('./components/ARView'));
@@ -62,7 +63,8 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      <div className="relative w-full h-screen overflow-hidden bg-black text-white font-sans selection:bg-white/30">
+      <CartProvider>
+        <div className="relative w-full h-screen overflow-hidden bg-black text-white font-sans selection:bg-white/30">
 
         <LoadingScreen onComplete={handleEnter} />
 
@@ -164,7 +166,8 @@ export default function App() {
           </motion.div>
         )}
 
-      </div>
+        </div>
+      </CartProvider>
     </ErrorBoundary>
   );
 }
