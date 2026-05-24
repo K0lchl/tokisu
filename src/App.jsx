@@ -14,6 +14,7 @@ const ContactPage = lazy(() => import('./components/ContactPage'));
 const ShopPage = lazy(() => import('./components/ShopPage'));
 const LegalPage = lazy(() => import('./components/LegalPage'));
 const PrivacyPage = lazy(() => import('./components/PrivacyPage'));
+const AdminOrdersPage = lazy(() => import('./components/AdminOrdersPage'));
 
 export default function App() {
   const [activePage, setActivePage] = useState('main');
@@ -146,6 +147,7 @@ export default function App() {
                 {activePage === 'shop' && <ShopPage onBack={() => setActivePage('main')} />}
                 {activePage === 'legal' && <LegalPage onBack={() => setActivePage('main')} />}
                 {activePage === 'privacy' && <PrivacyPage onBack={() => setActivePage('main')} />}
+                {activePage === 'admin-orders' && <AdminOrdersPage />}
               </Suspense>
             </motion.div>
           )}

@@ -1,7 +1,14 @@
+import { createClient } from '@supabase/supabase-js';
+
 // PayPal API の base URL
 const PAYPAL_API_URL = process.env.PAYPAL_MODE === 'live'
   ? 'https://api.paypal.com'
   : 'https://api.sandbox.paypal.com';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 async function getPayPalAccessToken() {
   const auth = Buffer.from(
@@ -65,7 +72,26 @@ export default async function handler(req, res) {
     // 注文IDを生成
     const orderId = `TOKISU-${Date.now()}`;
 
-    // ここで注文データをDBに保存するか、ログに記録することができます
+    // Supabase に注文データを保存
+    const { data, error } = await supabase.from('orders').insert([
+      {
+        order_id: orderId,
+        email: captureData.payer?.email_address,
+        name: shippingInfo.name,
+        address: shippingInfo.address,
+        phone: shippingInfo.phone,
+        items: {} || {},
+        total_amount: captureData.purchase_units?.[0]?.amount?.value || 0,
+        payment_method: 'paypal',
+        payment_status: 'completed',
+        shipping_status: 'pending',
+      },
+    ]);
+
+    if (error) {
+      throw new Error(`Supabase error: ${error.message}`);
+    }
+
     console.log('PayPal Order Captured:', {
       orderId,
       paypalOrderId: captureData.id,

@@ -1,6 +1,11 @@
 import Stripe from 'stripe';
+import { createClient } from '@supabase/supabase-js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -24,7 +29,26 @@ export default async function handler(req, res) {
     // 注文IDを生成
     const orderId = `TOKISU-${Date.now()}`;
 
-    // ここで注文データをDBに保存するか、ログに記録することができます
+    // Supabase に注文データを保存
+    const { data, error } = await supabase.from('orders').insert([
+      {
+        order_id: orderId,
+        email: paymentIntent.receipt_email,
+        name: shippingInfo.name,
+        address: shippingInfo.address,
+        phone: shippingInfo.phone,
+        items: paymentIntent.metadata || {},
+        total_amount: paymentIntent.amount / 100,
+        payment_method: 'stripe',
+        payment_status: 'completed',
+        shipping_status: 'pending',
+      },
+    ]);
+
+    if (error) {
+      throw new Error(`Supabase error: ${error.message}`);
+    }
+
     console.log('Order created:', {
       orderId,
       intentId,
