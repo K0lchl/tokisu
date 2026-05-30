@@ -55,12 +55,32 @@ export default function CheckoutModal({ isOpen, onClose, onSuccess }) {
       // このステップではモック処理を行います
       console.log('Stripe Payment Intent Created:', data);
 
+      // 支払い確認 & 在庫更新
+      const confirmResponse = await fetch('/api/confirm-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          intentId: data.intentId,
+          items: items.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+          })),
+          shippingInfo,
+        }),
+      });
+
+      const confirmData = await confirmResponse.json();
+
+      if (!confirmData.success) {
+        throw new Error(confirmData.error || 'Payment confirmation failed');
+      }
+
       // 決済成功時
       setStatus('success');
       setTimeout(() => {
         clearCart();
         onSuccess?.({
-          orderId: data.clientSecret,
+          orderId: confirmData.orderId,
           email: shippingInfo.email,
           shippingInfo,
         });
@@ -97,12 +117,32 @@ export default function CheckoutModal({ isOpen, onClose, onSuccess }) {
       // TODO: PayPal SDK を使用して、ここで実際の決済処理を実行
       console.log('PayPal Order Created:', data);
 
+      // PayPal 注文確認 & 在庫更新
+      const confirmResponse = await fetch('/api/confirm-paypal-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          paypalOrderId: data.orderId,
+          items: items.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+          })),
+          shippingInfo,
+        }),
+      });
+
+      const confirmData = await confirmResponse.json();
+
+      if (!confirmData.success) {
+        throw new Error(confirmData.error || 'Payment confirmation failed');
+      }
+
       // 決済成功時
       setStatus('success');
       setTimeout(() => {
         clearCart();
         onSuccess?.({
-          orderId: data.orderId,
+          orderId: confirmData.orderId,
           email: shippingInfo.email,
           shippingInfo,
         });

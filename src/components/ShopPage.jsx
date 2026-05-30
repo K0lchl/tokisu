@@ -32,7 +32,15 @@ export default function ShopPage({ onBack }) {
                 setLoading(false);
             }
         };
+
         fetchProducts();
+
+        // ポーリング: 3秒ごとにデータを更新
+        const pollInterval = setInterval(fetchProducts, 3000);
+
+        return () => {
+            clearInterval(pollInterval);
+        };
     }, []);
 
     // 取得した商品データを陶芸家ごとにグループ化
