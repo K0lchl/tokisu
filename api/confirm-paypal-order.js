@@ -72,6 +72,24 @@ export default async function handler(req, res) {
     // 注文IDを生成
     const orderId = `TOKISU-${Date.now()}`;
 
+    // 在庫を減らす処理
+    const itemsToProcess = req.body.items || [];
+    for (const item of itemsToProcess) {
+      const { data: productData } = await supabase
+        .from('products')
+        .select('stock')
+        .eq('id', item.productId)
+        .single();
+        
+      if (productData) {
+        const newStock = Math.max(0, productData.stock - item.quantity);
+        await supabase
+          .from('products')
+          .update({ stock: newStock })
+          .eq('id', item.productId);
+      }
+    }
+
     // Supabase に注文データを保存
     const { data, error } = await supabase.from('orders').insert([
       {

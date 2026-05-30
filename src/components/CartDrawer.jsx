@@ -101,9 +101,14 @@ export default function CartDrawer({ isOpen, onClose, onCheckout }) {
                           </span>
                           <button
                             onClick={() =>
-                              updateQuantity(item.productId, item.quantity + 1)
+                              updateQuantity(item.productId, Math.min(item.quantity + 1, item.product.stock))
                             }
-                            className="px-3 py-1 text-xs hover:bg-white/10"
+                            disabled={item.quantity >= item.product.stock}
+                            className={`px-3 py-1 text-xs ${
+                              item.quantity >= item.product.stock 
+                                ? 'opacity-30 cursor-not-allowed' 
+                                : 'hover:bg-white/10'
+                            }`}
                           >
                             +
                           </button>

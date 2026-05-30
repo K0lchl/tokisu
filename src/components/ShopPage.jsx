@@ -1,20 +1,42 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getProductsByArtisan } from '../data/products';
 import { useCart } from '../context/CartContext';
 import CartDrawer from './CartDrawer';
 import CheckoutModal from './CheckoutModal';
+import { supabase } from '../lib/supabase';
 
 export default function ShopPage({ onBack }) {
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [selectedArtisan, setSelectedArtisan] = useState(null);
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
     const [quantity, setQuantity] = useState(1);
     const [addedMessage, setAddedMessage] = useState(null);
-    const { items, itemCount, addItem } = useCart();
-    const artisanGroups = getProductsByArtisan();
+    const { items, itemCount, addItem, getItemQuantity } = useCart();
     const scrollRef = useRef(null);
+
+    // Supabaseから商品データを取得
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                const { data, error } = await supabase.from('products').select('*');
+                if (error) throw error;
+                setProducts(data || []);
+            } catch (err) {
+                console.error('Error fetching products:', err);
+                setProducts([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchProducts();
+    }, []);
+
+    // 取得した商品データを陶芸家ごとにグループ化
+    const artisanGroups = getProductsByArtisan(products);
 
     // 商品フォーマット (円)
     const formatPrice = (price) => {
@@ -54,60 +76,81 @@ export default function ShopPage({ onBack }) {
 
             {/* メインコンテンツ (横スクロール) */}
             <div className="flex-1 w-full h-full pt-32 pb-20 overflow-x-auto overflow-y-hidden snap-x snap-mandatory hide-scrollbar" ref={scrollRef}>
-                <div className="flex h-full min-w-max px-10 md:px-32 gap-32 pointer-events-auto">
-                    
-                    {artisanGroups.map((group, groupIdx) => (
-                        <div key={groupIdx} className="flex gap-16 h-full items-center">
-                            {/* 作家タイトル */}
-                            <div className="w-64 flex-shrink-0 snap-center">
-                                <motion.div
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ duration: 1, delay: 0.5 }}
-                                    onClick={() => setSelectedArtisan(group.artisanInfo)}
-                                    className="border-l border-white/20 pl-6 py-4 cursor-pointer group"
-                                >
-                                    <h2 className="text-sm tracking-[0.4em] text-white/50 mb-2 uppercase group-hover:text-white transition-colors">Artisan</h2>
-                                    <p className="text-xl md:text-2xl font-serif tracking-widest leading-relaxed group-hover:text-white/80 transition-colors">
-                                        {group.artisanInfo.kiln}<br/>
-                                        {group.artisanInfo.name}
-                                    </p>
-                                    <div className="mt-4 w-8 h-[1px] bg-white/20 group-hover:w-16 group-hover:bg-white transition-all duration-500"></div>
-                                </motion.div>
-                            </div>
+                {loading ? (
+                    <div className="h-full flex items-center justify-center">
+                        <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                            className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full"
+                        />
+                    </div>
+                ) : (
+                    <div className="flex h-full min-w-max px-10 md:px-32 gap-32 pointer-events-auto">
+                        {artisanGroups.map((group, groupIdx) => (
+                            <div key={groupIdx} className="flex gap-16 h-full items-center">
+                                {/* 作家タイトル */}
+                                <div className="w-64 flex-shrink-0 snap-center">
+                                    <motion.div
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ duration: 1, delay: 0.5 }}
+                                        onClick={() => setSelectedArtisan(group.artisanInfo)}
+                                        className="border-l border-white/20 pl-6 py-4 cursor-pointer group"
+                                    >
+                                        <h2 className="text-sm tracking-[0.4em] text-white/50 mb-2 uppercase group-hover:text-white transition-colors">Artisan</h2>
+                                        <p className="text-xl md:text-2xl font-serif tracking-widest leading-relaxed group-hover:text-white/80 transition-colors">
+                                            {group.artisanInfo.kiln}<br/>
+                                            {group.artisanInfo.name}
+                                        </p>
+                                        <div className="mt-4 w-8 h-[1px] bg-white/20 group-hover:w-16 group-hover:bg-white transition-all duration-500"></div>
+                                    </motion.div>
+                                </div>
 
-                            {/* 作品リスト */}
-                            {group.items.map((product, idx) => (
-                                <motion.div 
-                                    key={product.id}
-                                    initial={{ opacity: 0, scale: 0.95 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    transition={{ duration: 0.8, delay: 0.6 + (idx * 0.1) }}
-                                    onClick={() => setSelectedProduct(product)}
-                                    className="h-[60vh] aspect-[3/4] relative group cursor-pointer snap-center"
-                                >
-                                    <div className="absolute inset-0 overflow-hidden bg-white/5">
-                                        <img 
-                                            src={product.image} 
-                                            alt={product.name}
-                                            className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
-                                            onError={(e) => { e.target.src = 'https://via.placeholder.com/600x800/111111/333333?text=NO+IMAGE'; }}
-                                        />
-                                    </div>
-                                    <div className="absolute -bottom-16 left-0 right-0 flex justify-between items-end">
-                                        <div className="flex flex-col">
-                                            <h3 className="text-sm font-serif tracking-widest">{product.name}</h3>
+                                {/* 作品リスト */}
+                                {group.items.map((product, idx) => (
+                                    <motion.div 
+                                        key={product.id}
+                                        initial={{ opacity: 0, scale: 0.95 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        transition={{ duration: 0.8, delay: 0.6 + (idx * 0.1) }}
+                                        onClick={() => {
+                                            setSelectedProduct(product);
+                                            setQuantity(1); // モーダル開くときに数量リセット
+                                        }}
+                                        className="h-[60vh] aspect-[3/4] relative group cursor-pointer snap-center"
+                                    >
+                                        <div className="absolute inset-0 overflow-hidden bg-white/5">
+                                            <img 
+                                                src={product.image} 
+                                                alt={product.name}
+                                                className={`w-full h-full object-cover transition-all duration-700 ${
+                                                    product.stock <= 0 
+                                                        ? 'opacity-40 grayscale' 
+                                                        : 'opacity-80 group-hover:opacity-100 group-hover:scale-105'
+                                                }`}
+                                                onError={(e) => { e.target.src = 'https://via.placeholder.com/600x800/111111/333333?text=NO+IMAGE'; }}
+                                            />
+                                            {/* SOLD OUT オーバーレイ */}
+                                            {product.stock <= 0 && (
+                                                <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                                                    <span className="text-sm tracking-[0.4em] text-white/80 border border-white/40 px-6 py-2 bg-black/60 backdrop-blur-sm">SOLD OUT</span>
+                                                </div>
+                                            )}
                                         </div>
-                                        <span className="text-xs tracking-wider text-white/70">{formatPrice(product.price)}</span>
-                                    </div>
-                                </motion.div>
-                            ))}
-                        </div>
-                    ))}
-                    
-                    {/* スクロール余白 */}
-                    <div className="w-32 flex-shrink-0"></div>
-                </div>
+                                        <div className="absolute -bottom-16 left-0 right-0 flex justify-between items-end">
+                                            <div className="flex flex-col">
+                                                <h3 className="text-sm font-serif tracking-widest">{product.name}</h3>
+                                            </div>
+                                            <span className="text-xs tracking-wider text-white/70">{formatPrice(product.price)}</span>
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </div>
+                        ))}
+                        {/* スクロール余白 */}
+                        <div className="w-32 flex-shrink-0"></div>
+                    </div>
+                )}
             </div>
 
             {/* 商品詳細モーダル */}
@@ -134,7 +177,7 @@ export default function ShopPage({ onBack }) {
                                     transition={{ duration: 0.8 }}
                                     src={selectedProduct.image} 
                                     alt={selectedProduct.name}
-                                    className="max-w-full max-h-full object-contain"
+                                    className={`max-w-full max-h-full object-contain ${selectedProduct.stock <= 0 ? 'opacity-60 grayscale' : ''}`}
                                     onError={(e) => { e.target.src = 'https://via.placeholder.com/800x800/111111/333333?text=NO+IMAGE'; }}
                                 />
                             </div>
@@ -144,13 +187,34 @@ export default function ShopPage({ onBack }) {
                                     animate={{ y: 0, opacity: 1 }}
                                     transition={{ duration: 0.8, delay: 0.2 }}
                                 >
-                                    <p className="text-[10px] tracking-[0.4em] text-white/50 mb-4">{selectedProduct.kiln} | {selectedProduct.artisan}</p>
-                                    <h2 className="text-3xl md:text-5xl font-serif tracking-widest mb-8">{selectedProduct.name}</h2>
-                                    <p className="text-lg tracking-widest mb-12">{formatPrice(selectedProduct.price)}</p>
+                                    <p className="text-[10px] tracking-[0.4em] text-white/50 mb-4">
+                                        {selectedProduct.kiln} | {selectedProduct.artisan}
+                                    </p>
+                                    <h2 className="text-3xl md:text-5xl font-serif tracking-widest mb-8">
+                                        {selectedProduct.name}
+                                    </h2>
+                                    
+                                    <div className="flex items-center gap-6 mb-12">
+                                        <p className="text-lg tracking-widest">{formatPrice(selectedProduct.price)}</p>
+                                        
+                                        {/* 残り点数・SOLD OUT表示 */}
+                                        {selectedProduct.stock > 0 && selectedProduct.stock <= 5 && (
+                                            <span className="text-[10px] tracking-widest text-red-400 border border-red-500/30 bg-red-500/10 px-3 py-1.5 rounded">
+                                                残り {selectedProduct.stock} 点
+                                            </span>
+                                        )}
+                                        {selectedProduct.stock <= 0 && (
+                                            <span className="text-[10px] tracking-widest text-white/50 border border-white/20 px-3 py-1.5 rounded">
+                                                SOLD OUT
+                                            </span>
+                                        )}
+                                    </div>
+                                    
                                     <p className="text-sm text-white/70 leading-loose tracking-widest mb-12 max-w-md">
                                         {selectedProduct.description}
                                     </p>
 
+                                    {/* 数量セレクター */}
                                     <div className="flex items-center gap-4 mb-8">
                                         <span className="text-xs tracking-[0.2em] text-white/50 uppercase">Quantity</span>
                                         <div className="flex items-center border border-white/20 rounded-full">
@@ -163,13 +227,19 @@ export default function ShopPage({ onBack }) {
                                             <span className="px-4 py-2 text-sm text-white/70">{quantity}</span>
                                             <button
                                                 onClick={() => setQuantity(quantity + 1)}
-                                                className="px-4 py-2 text-sm hover:bg-white/10"
+                                                disabled={quantity >= (selectedProduct.stock - getItemQuantity(selectedProduct.id))}
+                                                className={`px-4 py-2 text-sm ${
+                                                    quantity >= (selectedProduct.stock - getItemQuantity(selectedProduct.id)) 
+                                                        ? 'opacity-30 cursor-not-allowed' 
+                                                        : 'hover:bg-white/10'
+                                                }`}
                                             >
                                                 +
                                             </button>
                                         </div>
                                     </div>
 
+                                    {/* カート追加ボタン */}
                                     <button
                                         onClick={() => {
                                             const productData = {
@@ -178,15 +248,25 @@ export default function ShopPage({ onBack }) {
                                                 artisan: selectedProduct.artisan,
                                                 kiln: selectedProduct.kiln,
                                                 image: selectedProduct.image,
+                                                stock: selectedProduct.stock
                                             };
                                             addItem(selectedProduct.id, productData, quantity);
                                             setAddedMessage(true);
                                             setTimeout(() => setAddedMessage(false), 2000);
                                             setQuantity(1);
                                         }}
-                                        className="w-full max-w-sm border border-white/30 py-4 text-[10px] tracking-[0.3em] hover:bg-white hover:text-black transition-colors duration-500"
+                                        disabled={selectedProduct.stock - getItemQuantity(selectedProduct.id) <= 0}
+                                        className={`w-full max-w-sm border py-4 text-[10px] tracking-[0.3em] transition-colors duration-500 ${
+                                            selectedProduct.stock - getItemQuantity(selectedProduct.id) <= 0
+                                                ? 'border-white/10 text-white/30 cursor-not-allowed bg-white/5'
+                                                : 'border-white/30 hover:bg-white hover:text-black text-white'
+                                        }`}
                                     >
-                                        ADD TO CART
+                                        {selectedProduct.stock <= 0 
+                                            ? 'SOLD OUT' 
+                                            : selectedProduct.stock - getItemQuantity(selectedProduct.id) <= 0
+                                                ? 'LIMIT REACHED (カート上限)'
+                                                : 'ADD TO CART'}
                                     </button>
 
                                     <AnimatePresence>
@@ -259,7 +339,6 @@ export default function ShopPage({ onBack }) {
                                     )}
                                     <div className="w-12 h-[1px] bg-white/20 my-8"></div>
                                     
-                                    {/* 経歴タイムライン */}
                                     {selectedArtisan.timeline && selectedArtisan.timeline.length > 0 && (
                                         <div className="mb-12">
                                             <ul className="text-xs text-white/70 leading-relaxed tracking-widest list-none space-y-2">
@@ -336,9 +415,7 @@ export default function ShopPage({ onBack }) {
                 isOpen={isCheckoutOpen}
                 onClose={() => setIsCheckoutOpen(false)}
                 onSuccess={(orderData) => {
-                    // 決済成功時の処理
                     console.log('Order placed:', orderData);
-                    // 必要に応じて確認メール送信API呼び出し
                 }}
             />
 

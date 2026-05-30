@@ -101,6 +101,11 @@ export function CartProvider({ children }) {
     });
   };
 
+  const getItemQuantity = (productId) => {
+    const item = state.items.find(item => item.productId === productId);
+    return item ? item.quantity : 0;
+  };
+
   const clearCart = () => {
     dispatch({ type: 'CLEAR_CART' });
   };
@@ -112,6 +117,7 @@ export function CartProvider({ children }) {
     addItem,
     removeItem,
     updateQuantity,
+    getItemQuantity,
     clearCart,
   };
 
